@@ -3,6 +3,9 @@
 import type React from "react"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
+import { auth } from "@/lib/firebase"
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } from "firebase/auth"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -17,6 +20,9 @@ export function AuthForm() {
   const [isLogin, setIsLogin] = useState(true)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const router = useRouter()
 
   // Login state
   const [loginData, setLoginData] = useState({
@@ -38,14 +44,39 @@ export function AuthForm() {
     receiveNews: false,
   })
 
-  const handleLoginSubmit = (e: React.FormEvent) => {
+  const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    console.log("Login:", loginData)
+    setError(null)
+    setLoading(true)
+    try {
+      await signInWithEmailAndPassword(auth, loginData.email, loginData.password)
+      router.push("/admin")
+    } catch (err: any) {
+      setError(err?.message || "Đăng nhập thất bại")
+    } finally {
+      setLoading(false)
+    }
   }
 
-  const handleRegisterSubmit = (e: React.FormEvent) => {
+  const handleRegisterSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    console.log("Register:", registerData)
+    setError(null)
+    if (registerData.password !== registerData.confirmPassword) {
+      setError("Mật khẩu xác nhận không khớp")
+      return
+    }
+    setLoading(true)
+    try {
+      const cred = await createUserWithEmailAndPassword(auth, registerData.email, registerData.password)
+      if (registerData.fullName) {
+        await updateProfile(cred.user, { displayName: registerData.fullName })
+      }
+      router.push("/admin")
+    } catch (err: any) {
+      setError(err?.message || "Đăng ký thất bại")
+    } finally {
+      setLoading(false)
+    }
   }
 
   const toggleMode = () => {
@@ -75,6 +106,11 @@ export function AuthForm() {
             <CardTitle className="text-center">{isLogin ? "Đăng nhập tài khoản" : "Tạo tài khoản mới"}</CardTitle>
           </CardHeader>
           <CardContent>
+            {error && (
+              <div className="mb-4 text-sm text-red-600 bg-red-50 border border-red-200 p-3 rounded">
+                {error}
+              </div>
+            )}
             {/* Login Form */}
             {isLogin && (
               <form onSubmit={handleLoginSubmit} className="space-y-4">
@@ -136,8 +172,19 @@ export function AuthForm() {
                 <Button
                   type="submit"
                   className="w-full bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600"
+                  disabled={loading}
                 >
-                  Đăng nhập
+                  {loading ? "Đang xử lý..." : "Đăng nhập"}
+                </Button>
+
+                {/* Nút điền nhanh thông tin admin (không lưu mật khẩu) */}
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full bg-transparent"
+                  onClick={() => setLoginData({ email: "trandaidung9a1@gmail.com", password: "Dai1212333", rememberMe: false })}
+                >
+                  Điền sẵn tài khoản Admin
                 </Button>
               </form>
             )}
@@ -306,9 +353,9 @@ export function AuthForm() {
                 <Button
                   type="submit"
                   className="w-full bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600"
-                  disabled={!registerData.agreeTerms}
+                  disabled={!registerData.agreeTerms || loading}
                 >
-                  Đăng ký tài khoản
+                  {loading ? "Đang xử lý..." : "Đăng ký tài khoản"}
                 </Button>
               </form>
             )}

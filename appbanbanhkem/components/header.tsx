@@ -18,11 +18,21 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { MiniGameWheel } from "@/components/mini-game-wheel";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { auth } from "@/lib/firebase";
+import { onAuthStateChanged, signOut, type User as FirebaseUser } from "firebase/auth";
 
 export function Header() {
   const [showSpecialFeatures, setShowSpecialFeatures] = useState(false);
   const [showMiniGame, setShowMiniGame] = useState(false);
+  const [user, setUser] = useState<FirebaseUser | null>(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, (u) => setUser(u));
+    return () => unsub();
+  }, []);
 
   return (
     <header className="bg-white shadow-sm border-b">
@@ -41,12 +51,10 @@ export function Header() {
           {/* Logo */}
           <Link href="/">
             <div className="flex items-center space-x-2 cursor-pointer">
-              <div className="w-10 h-10 bg-gradient-to-r from-pink-500 to-purple-500 rounded-full flex items-center justify-center">
-                <span className="text-white font-bold text-lg">🧁</span>
-              </div>
+              <img src="/favicon.ico" alt="Logo" className="w-10 h-10 rounded" />
               <div>
                 <h1 className="text-2xl font-bold text-pink-600">SweetCake</h1>
-                <p className="text-xs text-gray-500">.vn</p>
+                <p className="text-xs text-gray-500">Bánh kem</p>
               </div>
             </div>
           </Link>
@@ -77,17 +85,34 @@ export function Header() {
             <Button variant="ghost" size="sm">
               <Heart className="w-4 h-4" />
             </Button>
-            <Link href="/auth">
-              <Button variant="ghost" size="sm">
-                <User className="w-4 h-4" />
-              </Button>
-            </Link>
+            {user ? (
+              <div className="flex items-center space-x-2">
+                <span className="hidden md:inline text-sm text-gray-700">
+                  Xin chào, {user.displayName || user.email?.split("@")[0]}
+                </span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={async () => {
+                    await signOut(auth);
+                    router.refresh();
+                  }}
+                >
+                  Đăng xuất
+                </Button>
+              </div>
+            ) : (
+              <Link href="/auth">
+                <Button variant="ghost" size="sm">
+                  <User className="w-4 h-4" />
+                </Button>
+              </Link>
+            )}
             <Link href="/gio-hang">
               <Button variant="ghost" size="sm" className="relative">
                 <ShoppingCart className="w-4 h-4" />
-                <Badge className="absolute -top-2 -right-2 w-5 h-5 rounded-full p-0 flex items-center justify-center text-xs">
-                  3
-                </Badge>
+                {/* Show count badge only when > 0 */}
+                {/* 0 by default until real cart logic is wired */}
               </Button>
             </Link>
           </div>

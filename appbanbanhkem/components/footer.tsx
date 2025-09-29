@@ -10,9 +10,7 @@ export function Footer() {
           {/* Company info */}
           <div className="space-y-4">
             <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-to-r from-pink-500 to-purple-500 rounded-full flex items-center justify-center">
-                <span className="text-white font-bold">🧁</span>
-              </div>
+              <img src="/favicon.ico" alt="Logo" className="w-8 h-8 rounded" />
               <div>
                 <h3 className="text-xl font-bold text-pink-400">SweetCake.vn</h3>
               </div>

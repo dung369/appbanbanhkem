@@ -3,6 +3,7 @@
 // - Initializes Analytics only in the browser and only if supported
 
 import { getApp, getApps, initializeApp } from "firebase/app";
+import { getAuth } from "firebase/auth";
 
 // Your web app's Firebase configuration
 // These values are safe to be public in Firebase Web apps, but you can
@@ -33,3 +34,6 @@ export async function initAnalytics() {
   }
   return undefined;
 }
+
+// Auth instance for client-side authentication flows
+export const auth = typeof window !== "undefined" ? getAuth(firebaseApp) : (undefined as unknown as ReturnType<typeof getAuth>);

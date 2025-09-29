@@ -1,6 +1,9 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
+import { auth } from "@/lib/firebase"
+import { signOut } from "firebase/auth"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -19,77 +22,41 @@ import {
   Filter,
   Download,
   Bell,
-  Settings,
   LogOut,
 } from "lucide-react"
 
 export function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("dashboard")
+  const [showFilterModal, setShowFilterModal] = useState(false)
+  const router = useRouter()
 
   // Mock data
   const stats = {
-    totalOrders: 1234,
-    totalRevenue: 45600000,
-    totalCustomers: 892,
-    totalProducts: 156,
+    totalOrders: 0,
+    totalRevenue: 0,
+    totalCustomers: 0,
+    totalProducts: 0,
   }
 
-  const recentOrders = [
-    {
-      id: "#ORD001",
-      customer: "Nguyễn Văn A",
-      product: "Bánh sinh nhật hoa hồng",
-      amount: 450000,
-      status: "pending",
-      date: "2024-01-15",
-    },
-    {
-      id: "#ORD002",
-      customer: "Trần Thị B",
-      product: "Bánh cưới 3 tầng",
-      amount: 1200000,
-      status: "processing",
-      date: "2024-01-15",
-    },
-    {
-      id: "#ORD003",
-      customer: "Lê Văn C",
-      product: "Bánh Doraemon",
-      amount: 520000,
-      status: "completed",
-      date: "2024-01-14",
-    },
-  ]
+  // Start with zero/empty data – ready for real integrations
+  const recentOrders: Array<{
+    id: string
+    customer: string
+    product: string
+    amount: number
+    status: string
+    date: string
+  }> = []
 
-  const products = [
-    {
-      id: 1,
-      name: "Bánh sinh nhật hoa hồng",
-      category: "Bánh sinh nhật",
-      price: 450000,
-      stock: 25,
-      status: "active",
-      image: "/placeholder.svg?height=60&width=60",
-    },
-    {
-      id: 2,
-      name: "Bánh cưới 3 tầng",
-      category: "Bánh cưới",
-      price: 1200000,
-      stock: 8,
-      status: "active",
-      image: "/placeholder.svg?height=60&width=60",
-    },
-    {
-      id: 3,
-      name: "Bánh Doraemon",
-      category: "Bánh trẻ em",
-      price: 520000,
-      stock: 0,
-      status: "out_of_stock",
-      image: "/placeholder.svg?height=60&width=60",
-    },
-  ]
+  const products: Array<{
+    id: number
+    name: string
+    category: string
+    price: number
+    stock: number
+    status: string
+    image?: string
+  }> = []
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -125,9 +92,7 @@ export function AdminDashboard() {
       <div className="w-64 bg-white shadow-lg">
         <div className="p-6">
           <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-gradient-to-r from-pink-500 to-purple-500 rounded-full flex items-center justify-center">
-              <span className="text-white font-bold">🧁</span>
-            </div>
+            <img src="/favicon.ico" alt="Logo" className="w-8 h-8 rounded" />
             <div>
               <h2 className="text-xl font-bold text-pink-600">SweetCake</h2>
               <p className="text-xs text-gray-500">Admin Panel</p>
@@ -176,14 +141,61 @@ export function AdminDashboard() {
               Khách hàng
             </Button>
           </div>
+          <div className="px-6 py-2">
+            <Button
+              variant={activeTab === "feedback" ? "default" : "ghost"}
+              className="w-full justify-start"
+              onClick={() => setActiveTab("feedback")}
+            >
+              {/* using Bell icon already imported */}
+              <Bell className="w-4 h-4 mr-2" />
+              Ghi nhận ý kiến
+            </Button>
+          </div>
+          <div className="px-6 py-2">
+            <Button
+              variant={activeTab === "chat" ? "default" : "ghost"}
+              className="w-full justify-start"
+              onClick={() => setActiveTab("chat")}
+            >
+              <Users className="w-4 h-4 mr-2" />
+              Chat với khách hàng
+            </Button>
+          </div>
+          <div className="px-6 py-2">
+            <Button
+              variant={activeTab === "reports" ? "default" : "ghost"}
+              className="w-full justify-start"
+              onClick={() => setActiveTab("reports")}
+            >
+              <BarChart3 className="w-4 h-4 mr-2" />
+              Báo cáo & thống kê
+            </Button>
+          </div>
+          <div className="px-6 py-2">
+            <Button
+              variant="ghost"
+              className="w-full justify-start"
+              onClick={() => setShowFilterModal(true)}
+            >
+              <Filter className="w-4 h-4 mr-2" />
+              Lọc dữ liệu
+            </Button>
+          </div>
         </nav>
 
         <div className="absolute bottom-6 left-6 right-6 space-y-2">
-          <Button variant="ghost" className="w-full justify-start">
-            <Settings className="w-4 h-4 mr-2" />
-            Cài đặt
-          </Button>
-          <Button variant="ghost" className="w-full justify-start text-red-600">
+          <Button
+            variant="ghost"
+            className="w-full justify-start text-red-600"
+            onClick={async () => {
+              try {
+                await signOut(auth)
+              } finally {
+                router.replace("/auth")
+              }
+            }}
+          >
             <LogOut className="w-4 h-4 mr-2" />
             Đăng xuất
           </Button>
@@ -230,9 +242,9 @@ export function AdminDashboard() {
                       </div>
                       <ShoppingCart className="w-8 h-8 text-blue-500" />
                     </div>
-                    <div className="flex items-center mt-2">
-                      <TrendingUp className="w-4 h-4 text-green-500 mr-1" />
-                      <span className="text-sm text-green-600">+12% so với tháng trước</span>
+                    <div className="flex items-center mt-2 text-gray-500">
+                      <TrendingUp className="w-4 h-4 mr-1" />
+                      <span className="text-sm">0% thay đổi</span>
                     </div>
                   </CardContent>
                 </Card>
@@ -246,9 +258,9 @@ export function AdminDashboard() {
                       </div>
                       <BarChart3 className="w-8 h-8 text-green-500" />
                     </div>
-                    <div className="flex items-center mt-2">
-                      <TrendingUp className="w-4 h-4 text-green-500 mr-1" />
-                      <span className="text-sm text-green-600">+8% so với tháng trước</span>
+                    <div className="flex items-center mt-2 text-gray-500">
+                      <TrendingUp className="w-4 h-4 mr-1" />
+                      <span className="text-sm">0% thay đổi</span>
                     </div>
                   </CardContent>
                 </Card>
@@ -262,9 +274,9 @@ export function AdminDashboard() {
                       </div>
                       <Users className="w-8 h-8 text-purple-500" />
                     </div>
-                    <div className="flex items-center mt-2">
-                      <TrendingUp className="w-4 h-4 text-green-500 mr-1" />
-                      <span className="text-sm text-green-600">+15% so với tháng trước</span>
+                    <div className="flex items-center mt-2 text-gray-500">
+                      <TrendingUp className="w-4 h-4 mr-1" />
+                      <span className="text-sm">0% thay đổi</span>
                     </div>
                   </CardContent>
                 </Card>
@@ -278,9 +290,9 @@ export function AdminDashboard() {
                       </div>
                       <Package className="w-8 h-8 text-orange-500" />
                     </div>
-                    <div className="flex items-center mt-2">
-                      <TrendingUp className="w-4 h-4 text-green-500 mr-1" />
-                      <span className="text-sm text-green-600">+5 sản phẩm mới</span>
+                    <div className="flex items-center mt-2 text-gray-500">
+                      <TrendingUp className="w-4 h-4 mr-1" />
+                      <span className="text-sm">0 sản phẩm mới</span>
                     </div>
                   </CardContent>
                 </Card>
@@ -292,28 +304,202 @@ export function AdminDashboard() {
                   <CardTitle>Đơn hàng gần đây</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-4">
-                    {recentOrders.map((order) => (
-                      <div key={order.id} className="flex items-center justify-between p-4 border rounded-lg">
-                        <div className="flex items-center space-x-4">
-                          <div>
-                            <p className="font-medium">{order.id}</p>
-                            <p className="text-sm text-gray-600">{order.customer}</p>
+                  {recentOrders.length === 0 ? (
+                    <div className="text-center text-gray-500 py-8">Chưa có đơn hàng</div>
+                  ) : (
+                    <div className="space-y-4">
+                      {recentOrders.map((order) => (
+                        <div key={order.id} className="flex items-center justify-between p-4 border rounded-lg">
+                          <div className="flex items-center space-x-4">
+                            <div>
+                              <p className="font-medium">{order.id}</p>
+                              <p className="text-sm text-gray-600">{order.customer}</p>
+                            </div>
+                            <div>
+                              <p className="text-sm">{order.product}</p>
+                              <p className="text-sm text-gray-600">{order.date}</p>
+                            </div>
                           </div>
-                          <div>
-                            <p className="text-sm">{order.product}</p>
-                            <p className="text-sm text-gray-600">{order.date}</p>
+                          <div className="flex items-center space-x-4">
+                            <span className="font-medium">{order.amount.toLocaleString()}đ</span>
+                            {getStatusBadge(order.status)}
                           </div>
                         </div>
-                        <div className="flex items-center space-x-4">
-                          <span className="font-medium">{order.amount.toLocaleString()}đ</span>
-                          {getStatusBadge(order.status)}
-                        </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {/* Feedback Tab */}
+          {activeTab === "feedback" && (
+            <div className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Ghi nhận ý kiến khách hàng</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="bg-white rounded-lg border p-6">
+                    <p className="text-gray-700 font-medium mb-2">Ghi nhận ý kiến khách hàng</p>
+                    <div className="text-gray-500">Chưa có phản hồi</div>
                   </div>
                 </CardContent>
               </Card>
+            </div>
+          )}
+
+          {/* Chat Tab */}
+          {activeTab === "chat" && (
+            <div className="space-y-6">
+              <Card className="overflow-hidden">
+                <div className="bg-gradient-to-r from-pink-500 to-rose-400 text-white px-6 py-4 flex items-center justify-between">
+                  <div className="font-semibold">Chat với khách hàng</div>
+                  <div className="text-sm">Đang hoạt động •
+                    <span className="ml-1 inline-block w-2 h-2 bg-green-400 rounded-full align-middle"></span>
+                  </div>
+                </div>
+                <CardContent className="p-0">
+                  <div className="grid grid-cols-12 h-[60vh]">
+                    <div className="col-span-3 border-r p-4">
+                      <div className="text-sm text-gray-700 font-medium mb-3">Cuộc trò chuyện</div>
+                      <div className="h-full flex items-center justify-center text-gray-500">
+                        Chưa có cuộc trò chuyện
+                      </div>
+                    </div>
+                    <div className="col-span-9 flex flex-col">
+                      <div className="flex-1 flex items-center justify-center text-gray-500">
+                        Chưa có tin nhắn
+                      </div>
+                      <div className="border-t p-4">
+                        <Input placeholder="Nhập tin nhắn..." />
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {/* Reports Tab */}
+          {activeTab === "reports" && (
+            <div className="space-y-6">
+              <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <Card>
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-gray-600">Doanh thu tháng này</p>
+                        <p className="text-2xl font-bold">0</p>
+                      </div>
+                      <span className="text-green-500">$</span>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-gray-600">Đơn hàng tháng này</p>
+                        <p className="text-2xl font-bold">0</p>
+                      </div>
+                      <ShoppingCart className="w-6 h-6 text-blue-500" />
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-gray-600">Khách hàng mới</p>
+                        <p className="text-2xl font-bold">0</p>
+                      </div>
+                      <Users className="w-6 h-6 text-purple-500" />
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-gray-600">Sản phẩm bán ra</p>
+                        <p className="text-2xl font-bold">0</p>
+                      </div>
+                      <Package className="w-6 h-6 text-orange-500" />
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <Card className="lg:col-span-2">
+                  <CardHeader>
+                    <CardTitle>Xu hướng doanh thu 6 tháng</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="h-64 bg-gray-50 border rounded flex items-center justify-center text-gray-400">
+                      Biểu đồ (đang trống)
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Danh mục sản phẩm</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="h-64 bg-gray-50 border rounded flex items-center justify-center text-gray-400">
+                      Biểu đồ (đang trống)
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Hiệu suất 7 ngày qua</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="h-48 bg-gray-50 border rounded flex items-center justify-center text-gray-400">
+                      Biểu đồ (đang trống)
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Sản phẩm bán chạy nhất</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="h-48 bg-gray-50 border rounded flex items-center justify-center text-gray-400">
+                      Chưa có dữ liệu
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Phân khúc khách hàng</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="border rounded p-4 text-center">
+                        <div className="text-gray-600">Khách hàng mới</div>
+                        <div className="text-2xl font-bold">0</div>
+                        <div className="text-xs text-gray-500">0đ Chi tiêu trung bình</div>
+                      </div>
+                      <div className="border rounded p-4 text-center">
+                        <div className="text-gray-600">Khách hàng thường xuyên</div>
+                        <div className="text-2xl font-bold">0</div>
+                        <div className="text-xs text-gray-500">0đ Chi tiêu trung bình</div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+                <div />
+              </div>
             </div>
           )}
 
@@ -371,28 +557,36 @@ export function AdminDashboard() {
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-200">
-                        {recentOrders.map((order) => (
-                          <tr key={order.id}>
-                            <td className="px-6 py-4 whitespace-nowrap font-medium">{order.id}</td>
-                            <td className="px-6 py-4 whitespace-nowrap">{order.customer}</td>
-                            <td className="px-6 py-4">{order.product}</td>
-                            <td className="px-6 py-4 whitespace-nowrap font-medium">
-                              {order.amount.toLocaleString()}đ
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">{getStatusBadge(order.status)}</td>
-                            <td className="px-6 py-4 whitespace-nowrap">{order.date}</td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="flex space-x-2">
-                                <Button size="sm" variant="outline">
-                                  <Eye className="w-4 h-4" />
-                                </Button>
-                                <Button size="sm" variant="outline">
-                                  <Edit className="w-4 h-4" />
-                                </Button>
-                              </div>
+                        {recentOrders.length === 0 ? (
+                          <tr>
+                            <td className="px-6 py-8 text-center text-gray-500" colSpan={7}>
+                              Không có đơn hàng
                             </td>
                           </tr>
-                        ))}
+                        ) : (
+                          recentOrders.map((order) => (
+                            <tr key={order.id}>
+                              <td className="px-6 py-4 whitespace-nowrap font-medium">{order.id}</td>
+                              <td className="px-6 py-4 whitespace-nowrap">{order.customer}</td>
+                              <td className="px-6 py-4">{order.product}</td>
+                              <td className="px-6 py-4 whitespace-nowrap font-medium">
+                                {order.amount.toLocaleString()}đ
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">{getStatusBadge(order.status)}</td>
+                              <td className="px-6 py-4 whitespace-nowrap">{order.date}</td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div className="flex space-x-2">
+                                  <Button size="sm" variant="outline">
+                                    <Eye className="w-4 h-4" />
+                                  </Button>
+                                  <Button size="sm" variant="outline">
+                                    <Edit className="w-4 h-4" />
+                                  </Button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))
+                        )}
                       </tbody>
                     </table>
                   </div>
@@ -427,39 +621,47 @@ export function AdminDashboard() {
               </div>
 
               {/* Products Grid */}
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {products.map((product) => (
-                  <Card key={product.id}>
-                    <CardContent className="p-6">
-                      <div className="flex items-start space-x-4">
-                        <img
-                          src={product.image || "/placeholder.svg"}
-                          alt={product.name}
-                          className="w-16 h-16 object-cover rounded-lg"
-                        />
-                        <div className="flex-1 space-y-2">
-                          <h3 className="font-semibold">{product.name}</h3>
-                          <p className="text-sm text-gray-600">{product.category}</p>
-                          <div className="flex items-center justify-between">
-                            <span className="font-bold text-pink-600">{product.price.toLocaleString()}đ</span>
-                            {getProductStatusBadge(product.status)}
+              {products.length === 0 ? (
+                <Card>
+                  <CardContent className="p-10 text-center text-gray-500">
+                    Chưa có sản phẩm
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {products.map((product) => (
+                    <Card key={product.id}>
+                      <CardContent className="p-6">
+                        <div className="flex items-start space-x-4">
+                          <img
+                            src={product.image || "/placeholder.svg"}
+                            alt={product.name}
+                            className="w-16 h-16 object-cover rounded-lg"
+                          />
+                          <div className="flex-1 space-y-2">
+                            <h3 className="font-semibold">{product.name}</h3>
+                            <p className="text-sm text-gray-600">{product.category}</p>
+                            <div className="flex items-center justify-between">
+                              <span className="font-bold text-pink-600">{product.price.toLocaleString()}đ</span>
+                              {getProductStatusBadge(product.status)}
+                            </div>
+                            <p className="text-sm text-gray-600">Tồn kho: {product.stock}</p>
                           </div>
-                          <p className="text-sm text-gray-600">Tồn kho: {product.stock}</p>
                         </div>
-                      </div>
-                      <div className="flex space-x-2 mt-4">
-                        <Button size="sm" variant="outline" className="flex-1 bg-transparent">
-                          <Edit className="w-4 h-4 mr-2" />
-                          Sửa
-                        </Button>
-                        <Button size="sm" variant="outline" className="text-red-600 bg-transparent">
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
+                        <div className="flex space-x-2 mt-4">
+                          <Button size="sm" variant="outline" className="flex-1 bg-transparent">
+                            <Edit className="w-4 h-4 mr-2" />
+                            Sửa
+                          </Button>
+                          <Button size="sm" variant="outline" className="text-red-600 bg-transparent">
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
@@ -471,13 +673,57 @@ export function AdminDashboard() {
                   <CardTitle>Danh sách khách hàng</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-gray-600">Chức năng quản lý khách hàng đang được phát triển...</p>
+                  <p className="text-gray-600">Chưa có khách hàng</p>
                 </CardContent>
               </Card>
             </div>
           )}
         </div>
       </div>
+
+      {/* Filter Modal */}
+      {showFilterModal && (
+        <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-lg w-full max-w-md">
+            <div className="flex items-center justify-between border-b px-4 py-3">
+              <div className="font-semibold">Lọc dữ liệu / Xóa bản ghi</div>
+              <button onClick={() => setShowFilterModal(false)} className="text-gray-500">✕</button>
+            </div>
+            <div className="p-4 space-y-4">
+              <div>
+                <div className="text-sm mb-1">Loại dữ liệu</div>
+                <Select>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Đơn hàng" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="orders">Đơn hàng</SelectItem>
+                    <SelectItem value="customers">Khách hàng</SelectItem>
+                    <SelectItem value="products">Sản phẩm</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <div className="text-sm mb-1">Bản ghi</div>
+                <Select>
+                  <SelectTrigger>
+                    <SelectValue placeholder="-- Chọn bản ghi --" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">(Chưa có)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 border-t px-4 py-3">
+              <Button variant="outline" className="bg-transparent" onClick={() => setShowFilterModal(false)}>
+                Hủy
+              </Button>
+              <Button className="bg-red-500 hover:bg-red-600">Xóa</Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
