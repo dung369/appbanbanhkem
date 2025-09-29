@@ -19,10 +19,10 @@ interface Product {
 }
 
 interface ProductGridProps {
-  products: Product[]
+  products?: Product[]
 }
 
-export function ProductGrid({ products }: ProductGridProps) {
+export function ProductGrid({ products = [] }: ProductGridProps) {
   return (
     <div className="space-y-6">
       {/* Sort and View Options */}
@@ -44,8 +44,16 @@ export function ProductGrid({ products }: ProductGridProps) {
         </div>
       </div>
 
-      {/* Product Grid */}
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {products.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-16 border rounded-lg bg-gray-50 text-center">
+          <img src="/placeholder.svg" alt="No products" className="w-20 h-20 opacity-40 mb-4" />
+          <h3 className="text-lg font-semibold text-gray-800 mb-1">Chưa có sản phẩm</h3>
+          <p className="text-sm text-gray-600">Sản phẩm sẽ hiển thị tại đây sau khi Admin thêm mới.</p>
+        </div>
+      ) : (
+        <>
+          {/* Product Grid */}
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
         {products.map((product) => (
           <Card key={product.id} className="group hover:shadow-xl transition-all duration-300 overflow-hidden">
             <div className="relative">
@@ -113,26 +121,9 @@ export function ProductGrid({ products }: ProductGridProps) {
             </CardContent>
           </Card>
         ))}
-      </div>
-
-      {/* Pagination */}
-      <div className="flex justify-center space-x-2 mt-8">
-        <Button variant="outline" size="sm">
-          Trước
-        </Button>
-        <Button size="sm" className="bg-pink-500 text-white">
-          1
-        </Button>
-        <Button variant="outline" size="sm">
-          2
-        </Button>
-        <Button variant="outline" size="sm">
-          3
-        </Button>
-        <Button variant="outline" size="sm">
-          Sau
-        </Button>
-      </div>
+          </div>
+        </>
+      )}
     </div>
   )
 }

@@ -24,137 +24,7 @@ interface Beverage {
 }
 
 export function BeverageGrid() {
-  const [beverages] = useState<Beverage[]>([
-    {
-      id: 1,
-      name: "Trà sữa trân châu đường đen",
-      price: 45000,
-      originalPrice: 55000,
-      rating: 4.8,
-      orders: 2341,
-      image: "/placeholder.svg?height=200&width=200",
-      category: "Trà sữa",
-      description: "Trà sữa thơm ngon với trân châu đường đen dai ngon",
-      temperature: "both",
-      prepTime: "5-7 phút",
-      size: ["M", "L"],
-      isPopular: true,
-    },
-    {
-      id: 2,
-      name: "Cà phê sữa đá Việt Nam",
-      price: 35000,
-      originalPrice: 42000,
-      rating: 4.9,
-      orders: 1876,
-      image: "/placeholder.svg?height=200&width=200",
-      category: "Cà phê",
-      description: "Cà phê phin truyền thống với sữa đặc ngọt ngào",
-      temperature: "cold",
-      prepTime: "3-5 phút",
-      size: ["M", "L"],
-      isPopular: true,
-    },
-    {
-      id: 3,
-      name: "Smoothie xoài dứa",
-      price: 42000,
-      originalPrice: 50000,
-      rating: 4.7,
-      orders: 1234,
-      image: "/placeholder.svg?height=200&width=200",
-      category: "Smoothie",
-      description: "Smoothie xoài dứa tươi mát, bổ dưỡng",
-      temperature: "cold",
-      prepTime: "3-4 phút",
-      size: ["M", "L", "XL"],
-      isNew: true,
-    },
-    {
-      id: 4,
-      name: "Nước ép cam tươi",
-      price: 38000,
-      rating: 4.6,
-      orders: 987,
-      image: "/placeholder.svg?height=200&width=200",
-      category: "Nước ép",
-      description: "Nước ép cam tươi 100%, giàu vitamin C",
-      temperature: "cold",
-      prepTime: "2-3 phút",
-      size: ["M", "L"],
-    },
-    {
-      id: 5,
-      name: "Trà đào cam sả",
-      price: 40000,
-      originalPrice: 48000,
-      rating: 4.8,
-      orders: 1567,
-      image: "/placeholder.svg?height=200&width=200",
-      category: "Trà trái cây",
-      description: "Trà đào cam sả thơm mát, vị chua ngọt hài hòa",
-      temperature: "cold",
-      prepTime: "4-6 phút",
-      size: ["M", "L"],
-      isPopular: true,
-    },
-    {
-      id: 6,
-      name: "Cappuccino nóng",
-      price: 48000,
-      rating: 4.7,
-      orders: 876,
-      image: "/placeholder.svg?height=200&width=200",
-      category: "Cà phê",
-      description: "Cappuccino Ý với lớp foam sữa mịn màng",
-      temperature: "hot",
-      prepTime: "4-5 phút",
-      size: ["M", "L"],
-    },
-    {
-      id: 7,
-      name: "Matcha latte đá",
-      price: 52000,
-      originalPrice: 60000,
-      rating: 4.5,
-      orders: 654,
-      image: "/placeholder.svg?height=200&width=200",
-      category: "Trà",
-      description: "Matcha Nhật Bản nguyên chất với sữa tươi",
-      temperature: "both",
-      prepTime: "5-6 phút",
-      size: ["M", "L"],
-      isNew: true,
-    },
-    {
-      id: 8,
-      name: "Sinh tố bơ",
-      price: 45000,
-      rating: 4.6,
-      orders: 543,
-      image: "/placeholder.svg?height=200&width=200",
-      category: "Sinh tố",
-      description: "Sinh tố bơ béo ngậy, bổ dưỡng",
-      temperature: "cold",
-      prepTime: "3-4 phút",
-      size: ["M", "L"],
-    },
-    {
-      id: 9,
-      name: "Trà sữa hokkaido",
-      price: 55000,
-      originalPrice: 65000,
-      rating: 4.9,
-      orders: 432,
-      image: "/placeholder.svg?height=200&width=200",
-      category: "Trà sữa",
-      description: "Trà sữa hokkaido cao cấp với kem tươi Nhật",
-      temperature: "both",
-      prepTime: "6-8 phút",
-      size: ["M", "L"],
-      isNew: true,
-    },
-  ])
+  const [beverages] = useState<Beverage[]>([])
 
   const getTemperatureIcon = (temp: string) => {
     switch (temp) {
@@ -203,7 +73,13 @@ export function BeverageGrid() {
         </div>
       </div>
 
-      {/* Beverages Grid */}
+      {beverages.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-16 border rounded-lg bg-gray-50 text-center">
+          <img src="/placeholder.svg" alt="No products" className="w-20 h-20 opacity-40 mb-4" />
+          <h3 className="text-lg font-semibold text-gray-800 mb-1">Chưa có sản phẩm</h3>
+          <p className="text-sm text-gray-600">Sản phẩm sẽ hiển thị tại đây sau khi Admin thêm mới.</p>
+        </div>
+      ) : (
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
         {beverages.map((beverage) => (
           <Card key={beverage.id} className="group hover:shadow-xl transition-all duration-300 overflow-hidden">
@@ -301,6 +177,7 @@ export function BeverageGrid() {
           </Card>
         ))}
       </div>
+      )}
 
       {/* Combo Suggestions */}
       <Card className="bg-gradient-to-r from-blue-50 to-cyan-50 border-blue-200">

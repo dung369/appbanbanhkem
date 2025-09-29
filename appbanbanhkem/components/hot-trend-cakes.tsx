@@ -3,68 +3,8 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Star, Heart, ShoppingCart } from "lucide-react"
 
-const hotTrendCakes = [
-  {
-    name: "Bánh Doraemon",
-    description: "Hình mặt Doraemon xanh đáng yêu, cực hợp sinh nhật bé trai",
-    price: "450.000đ",
-    originalPrice: "550.000đ",
-    rating: 4.9,
-    orders: 234,
-    image: "/placeholder.svg?height=250&width=250",
-    trending: true,
-  },
-  {
-    name: "Bánh Pikachu",
-    description: "Màu vàng nổi bật, tai & đuôi tạo hình cực cute",
-    price: "420.000đ",
-    originalPrice: "500.000đ",
-    rating: 4.8,
-    orders: 189,
-    image: "/placeholder.svg?height=250&width=250",
-    trending: true,
-  },
-  {
-    name: "Bánh Gấu Panda",
-    description: 'Bánh đơn giản mà đẹp, rất "Instagrammable"',
-    price: "380.000đ",
-    originalPrice: "450.000đ",
-    rating: 4.7,
-    orders: 156,
-    image: "/placeholder.svg?height=250&width=250",
-    trending: false,
-  },
-  {
-    name: "Rainbow Cake",
-    description: "Bánh nhiều lớp màu bên trong, cực bắt mắt khi cắt",
-    price: "520.000đ",
-    originalPrice: "600.000đ",
-    rating: 4.9,
-    orders: 298,
-    image: "/placeholder.svg?height=250&width=250",
-    trending: true,
-  },
-  {
-    name: "Barbie Cake",
-    description: "Búp bê thật, váy là phần bánh — bé gái rất thích",
-    price: "680.000đ",
-    originalPrice: "780.000đ",
-    rating: 4.8,
-    orders: 145,
-    image: "/placeholder.svg?height=250&width=250",
-    trending: false,
-  },
-  {
-    name: "Bánh in ảnh",
-    description: "In ảnh người thân, idol… lên mặt bánh",
-    price: "350.000đ",
-    originalPrice: "420.000đ",
-    rating: 4.6,
-    orders: 267,
-    image: "/placeholder.svg?height=250&width=250",
-    trending: true,
-  },
-]
+type HotItem = { name: string; description?: string; price: string; originalPrice?: string; rating: number; orders: number; image?: string; trending?: boolean }
+const hotTrendCakes: HotItem[] = []
 
 export function HotTrendCakes() {
   return (
@@ -82,7 +22,12 @@ export function HotTrendCakes() {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {hotTrendCakes.length === 0 ? (
+          <div className="border rounded-lg bg-white py-12 text-center text-gray-600">
+            Chưa có sản phẩm Hot Trend. Sản phẩm sẽ hiển thị khi Admin thêm vào.
+          </div>
+        ) : (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {hotTrendCakes.map((cake, index) => (
             <Card key={index} className="group hover:shadow-xl transition-all duration-300 overflow-hidden">
               <div className="relative">
@@ -134,6 +79,7 @@ export function HotTrendCakes() {
             </Card>
           ))}
         </div>
+        )}
 
         <div className="text-center mt-8">
           <Button size="lg" variant="outline" className="border-pink-300 text-pink-600 hover:bg-pink-50 bg-transparent">

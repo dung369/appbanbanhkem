@@ -21,154 +21,7 @@ interface Accessory {
 }
 
 export function AccessoriesGrid() {
-  const [accessories] = useState<Accessory[]>([
-    {
-      id: 1,
-      name: "Bộ nến sinh nhật số 0-9",
-      price: 25000,
-      originalPrice: 35000,
-      rating: 4.8,
-      orders: 1234,
-      image: "/placeholder.svg?height=200&width=200",
-      category: "Nến sinh nhật",
-      description: "Bộ nến số đầy đủ từ 0-9, chất liệu sáp an toàn",
-      inStock: true,
-    },
-    {
-      id: 2,
-      name: "Dao cắt bánh inox cao cấp",
-      price: 45000,
-      originalPrice: 60000,
-      rating: 4.9,
-      orders: 892,
-      image: "/placeholder.svg?height=200&width=200",
-      category: "Dụng cụ",
-      description: "Dao cắt bánh inox 304, tay cầm chống trượt",
-      inStock: true,
-    },
-    {
-      id: 3,
-      name: "Bong bóng sinh nhật Happy Birthday",
-      price: 35000,
-      originalPrice: 50000,
-      rating: 4.7,
-      orders: 567,
-      image: "/placeholder.svg?height=200&width=200",
-      category: "Trang trí",
-      description: "Set 10 bong bóng chữ Happy Birthday màu vàng gold",
-      inStock: true,
-    },
-    {
-      id: 4,
-      name: "Combo trang trí sinh nhật Pink",
-      price: 120000,
-      originalPrice: 180000,
-      rating: 4.8,
-      orders: 345,
-      image: "/placeholder.svg?height=200&width=200",
-      category: "Combo",
-      description: "Bao gồm: bong bóng, dây treo, nón sinh nhật, khăn giấy",
-      inStock: true,
-      isCombo: true,
-    },
-    {
-      id: 5,
-      name: "Nón sinh nhật kim tuyến",
-      price: 15000,
-      originalPrice: 25000,
-      rating: 4.6,
-      orders: 789,
-      image: "/placeholder.svg?height=200&width=200",
-      category: "Phụ kiện",
-      description: "Set 6 nón sinh nhật kim tuyến nhiều màu",
-      inStock: true,
-    },
-    {
-      id: 6,
-      name: "Khăn giấy sinh nhật cao cấp",
-      price: 20000,
-      originalPrice: 30000,
-      rating: 4.5,
-      orders: 456,
-      image: "/placeholder.svg?height=200&width=200",
-      category: "Dụng cụ",
-      description: "Khăn giấy 3 lớp, họa tiết sinh nhật đáng yêu",
-      inStock: true,
-    },
-    {
-      id: 7,
-      name: "Dây treo trang trí Happy Birthday",
-      price: 30000,
-      originalPrice: 45000,
-      rating: 4.7,
-      orders: 623,
-      image: "/placeholder.svg?height=200&width=200",
-      category: "Trang trí",
-      description: "Dây treo chữ Happy Birthday bằng giấy cứng",
-      inStock: true,
-    },
-    {
-      id: 8,
-      name: "Nến pháo hoa sinh nhật",
-      price: 40000,
-      originalPrice: 55000,
-      rating: 4.9,
-      orders: 234,
-      image: "/placeholder.svg?height=200&width=200",
-      category: "Nến sinh nhật",
-      description: "Nến pháo hoa an toàn, tạo hiệu ứng đẹp mắt",
-      inStock: false,
-    },
-    {
-      id: 9,
-      name: "Hộp quà sinh nhật cao cấp",
-      price: 65000,
-      originalPrice: 85000,
-      rating: 4.8,
-      orders: 345,
-      image: "/placeholder.svg?height=200&width=200",
-      category: "Hộp quà",
-      description: "Hộp quà giấy cứng, có nơ ribbon sang trọng",
-      inStock: true,
-    },
-    {
-      id: 10,
-      name: "Combo mega sinh nhật VIP",
-      price: 250000,
-      originalPrice: 350000,
-      rating: 4.9,
-      orders: 123,
-      image: "/placeholder.svg?height=200&width=200",
-      category: "Combo",
-      description: "Combo đầy đủ: trang trí, nến, dụng cụ, quà tặng",
-      inStock: true,
-      isCombo: true,
-    },
-    {
-      id: 11,
-      name: "Thiệp chúc mừng sinh nhật",
-      price: 12000,
-      originalPrice: 20000,
-      rating: 4.4,
-      orders: 678,
-      image: "/placeholder.svg?height=200&width=200",
-      category: "Thiệp",
-      description: "Thiệp sinh nhật 3D pop-up đẹp mắt",
-      inStock: true,
-    },
-    {
-      id: 12,
-      name: "Kẹo trang trí bánh sinh nhật",
-      price: 18000,
-      originalPrice: 28000,
-      rating: 4.6,
-      orders: 456,
-      image: "/placeholder.svg?height=200&width=200",
-      category: "Trang trí bánh",
-      description: "Set kẹo trang trí nhiều hình dạng đáng yêu",
-      inStock: true,
-    },
-  ])
+  const [accessories] = useState<Accessory[]>([])
 
   return (
     <div className="space-y-6">
@@ -191,7 +44,13 @@ export function AccessoriesGrid() {
         </div>
       </div>
 
-      {/* Accessories Grid */}
+      {accessories.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-16 border rounded-lg bg-gray-50 text-center">
+          <img src="/placeholder.svg" alt="No products" className="w-20 h-20 opacity-40 mb-4" />
+          <h3 className="text-lg font-semibold text-gray-800 mb-1">Chưa có sản phẩm</h3>
+          <p className="text-sm text-gray-600">Sản phẩm sẽ hiển thị tại đây sau khi Admin thêm mới.</p>
+        </div>
+      ) : (
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
         {accessories.map((accessory) => (
           <Card key={accessory.id} className="group hover:shadow-xl transition-all duration-300 overflow-hidden">
@@ -271,45 +130,9 @@ export function AccessoriesGrid() {
           </Card>
         ))}
       </div>
+      )}
 
-      {/* Combo Suggestions */}
-      <Card className="bg-gradient-to-r from-purple-50 to-pink-50 border-purple-200">
-        <CardContent className="p-6">
-          <div className="text-center space-y-4">
-            <h3 className="text-xl font-bold text-gray-900">🎁 Gợi ý combo tiết kiệm</h3>
-            <p className="text-gray-600">Mua combo để tiết kiệm hơn và có đầy đủ phụ kiện cho bữa tiệc hoàn hảo!</p>
-            <div className="grid md:grid-cols-3 gap-4 mt-6">
-              <div className="bg-white p-4 rounded-lg border">
-                <h4 className="font-semibold mb-2">🎈 Combo Cơ bản</h4>
-                <p className="text-sm text-gray-600 mb-2">Nến + Dao cắt + Khăn giấy</p>
-                <div className="flex items-center justify-between">
-                  <span className="text-lg font-bold text-orange-600">85.000đ</span>
-                  <span className="text-sm text-gray-400 line-through">120.000đ</span>
-                </div>
-              </div>
-              <div className="bg-white p-4 rounded-lg border">
-                <h4 className="font-semibold mb-2">🎉 Combo Tiêu chuẩn</h4>
-                <p className="text-sm text-gray-600 mb-2">Cơ bản + Bong bóng + Nón</p>
-                <div className="flex items-center justify-between">
-                  <span className="text-lg font-bold text-orange-600">150.000đ</span>
-                  <span className="text-sm text-gray-400 line-through">220.000đ</span>
-                </div>
-              </div>
-              <div className="bg-white p-4 rounded-lg border">
-                <h4 className="font-semibold mb-2">👑 Combo VIP</h4>
-                <p className="text-sm text-gray-600 mb-2">Tiêu chuẩn + Hộp quà + Thiệp</p>
-                <div className="flex items-center justify-between">
-                  <span className="text-lg font-bold text-orange-600">250.000đ</span>
-                  <span className="text-sm text-gray-400 line-through">380.000đ</span>
-                </div>
-              </div>
-            </div>
-            <Button className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600">
-              Xem tất cả combo
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Placeholder: combo suggestions can be added later by Admin */}
 
       {/* Pagination */}
       <div className="flex justify-center space-x-2 mt-8">

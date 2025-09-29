@@ -1,0 +1,11 @@
+{
+  "hosting": {
+    "site": "webbanhoa-26a60-2d2fa",
+    "public": "public",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ]
+  }
+}

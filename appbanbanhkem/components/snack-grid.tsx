@@ -24,132 +24,7 @@ interface Snack {
 }
 
 export function SnackGrid() {
-  const [snacks] = useState<Snack[]>([
-    {
-      id: 1,
-      name: "Bánh quy bơ Đan Mạch",
-      price: 85000,
-      originalPrice: 120000,
-      rating: 4.8,
-      orders: 1234,
-      image: "/placeholder.svg?height=200&width=200",
-      category: "Bánh quy",
-      description: "Bánh quy bơ thơm ngon từ Đan Mạch, giòn tan",
-      weight: "454g",
-      origin: "Đan Mạch",
-      isImported: true,
-      isBestSeller: true,
-    },
-    {
-      id: 2,
-      name: "Chocolate đen 70% cacao",
-      price: 65000,
-      originalPrice: 80000,
-      rating: 4.9,
-      orders: 987,
-      image: "/placeholder.svg?height=200&width=200",
-      category: "Chocolate",
-      description: "Chocolate đen nguyên chất 70% cacao, vị đắng nhẹ",
-      weight: "100g",
-      origin: "Bỉ",
-      isOrganic: true,
-      isImported: true,
-    },
-    {
-      id: 3,
-      name: "Hạt điều rang muối",
-      price: 120000,
-      rating: 4.7,
-      orders: 756,
-      image: "/placeholder.svg?height=200&width=200",
-      category: "Hạt rang",
-      description: "Hạt điều Bình Phước rang muối thơm ngon",
-      weight: "500g",
-      origin: "Việt Nam",
-      isOrganic: true,
-    },
-    {
-      id: 4,
-      name: "Kẹo dẻo trái cây",
-      price: 45000,
-      originalPrice: 55000,
-      rating: 4.5,
-      orders: 2341,
-      image: "/placeholder.svg?height=200&width=200",
-      category: "Kẹo",
-      description: "Kẹo dẻo nhiều vị trái cây tự nhiên",
-      weight: "200g",
-      origin: "Việt Nam",
-      isBestSeller: true,
-    },
-    {
-      id: 5,
-      name: "Bánh tráng nướng",
-      price: 35000,
-      rating: 4.6,
-      orders: 1876,
-      image: "/placeholder.svg?height=200&width=200",
-      category: "Bánh tráng",
-      description: "Bánh tráng nướng Đà Lạt giòn rụm",
-      weight: "100g",
-      origin: "Đà Lạt",
-      isBestSeller: true,
-    },
-    {
-      id: 6,
-      name: "Khoai tây chiên vị BBQ",
-      price: 28000,
-      originalPrice: 35000,
-      rating: 4.4,
-      orders: 1567,
-      image: "/placeholder.svg?height=200&width=200",
-      category: "Snack",
-      description: "Khoai tây chiên giòn với vị BBQ đậm đà",
-      weight: "150g",
-      origin: "Việt Nam",
-    },
-    {
-      id: 7,
-      name: "Hạnh nhân rang bơ",
-      price: 150000,
-      originalPrice: 180000,
-      rating: 4.8,
-      orders: 432,
-      image: "/placeholder.svg?height=200&width=200",
-      category: "Hạt rang",
-      description: "Hạnh nhân Mỹ rang bơ thơm ngon, bổ dưỡng",
-      weight: "500g",
-      origin: "Mỹ",
-      isImported: true,
-      isOrganic: true,
-    },
-    {
-      id: 8,
-      name: "Bánh quy yến mạch",
-      price: 55000,
-      rating: 4.6,
-      orders: 654,
-      image: "/placeholder.svg?height=200&width=200",
-      category: "Bánh quy",
-      description: "Bánh quy yến mạch healthy, ít đường",
-      weight: "200g",
-      origin: "Việt Nam",
-      isOrganic: true,
-    },
-    {
-      id: 9,
-      name: "Mứt dừa non",
-      price: 42000,
-      originalPrice: 50000,
-      rating: 4.7,
-      orders: 543,
-      image: "/placeholder.svg?height=200&width=200",
-      category: "Mứt",
-      description: "Mứt dừa non Bến Tre ngọt thanh, mềm dai",
-      weight: "250g",
-      origin: "Bến Tre",
-    },
-  ])
+  const [snacks] = useState<Snack[]>([])
 
   return (
     <div className="space-y-6">
@@ -172,7 +47,13 @@ export function SnackGrid() {
         </div>
       </div>
 
-      {/* Snacks Grid */}
+      {snacks.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-16 border rounded-lg bg-gray-50 text-center">
+          <img src="/placeholder.svg" alt="No products" className="w-20 h-20 opacity-40 mb-4" />
+          <h3 className="text-lg font-semibold text-gray-800 mb-1">Chưa có sản phẩm</h3>
+          <p className="text-sm text-gray-600">Sản phẩm sẽ hiển thị tại đây sau khi Admin thêm mới.</p>
+        </div>
+      ) : (
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
         {snacks.map((snack) => (
           <Card key={snack.id} className="group hover:shadow-xl transition-all duration-300 overflow-hidden">
@@ -261,37 +142,9 @@ export function SnackGrid() {
           </Card>
         ))}
       </div>
+      )}
 
-      {/* Special Categories */}
-      <Card className="bg-gradient-to-r from-green-50 to-yellow-50 border-green-200">
-        <CardContent className="p-6">
-          <div className="text-center space-y-4">
-            <h3 className="text-xl font-bold text-gray-900">🌱 Danh mục đặc biệt</h3>
-            <div className="grid md:grid-cols-4 gap-4 mt-6">
-              <div className="bg-white p-4 rounded-lg border text-center">
-                <div className="text-2xl mb-2">🌱</div>
-                <h4 className="font-semibold mb-1">Organic</h4>
-                <p className="text-sm text-gray-600">Sản phẩm hữu cơ</p>
-              </div>
-              <div className="bg-white p-4 rounded-lg border text-center">
-                <div className="text-2xl mb-2">🌍</div>
-                <h4 className="font-semibold mb-1">Nhập khẩu</h4>
-                <p className="text-sm text-gray-600">Từ các nước</p>
-              </div>
-              <div className="bg-white p-4 rounded-lg border text-center">
-                <div className="text-2xl mb-2">🏠</div>
-                <h4 className="font-semibold mb-1">Nội địa</h4>
-                <p className="text-sm text-gray-600">Sản xuất tại VN</p>
-              </div>
-              <div className="bg-white p-4 rounded-lg border text-center">
-                <div className="text-2xl mb-2">💚</div>
-                <h4 className="font-semibold mb-1">Healthy</h4>
-                <p className="text-sm text-gray-600">Ít đường, ít muối</p>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Placeholder: special categories can be added later by Admin */}
 
       {/* Pagination */}
       <div className="flex justify-center space-x-2 mt-8">

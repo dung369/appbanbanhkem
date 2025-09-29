@@ -23,30 +23,8 @@ interface Address {
 }
 
 export function AddressManager() {
-  const [addresses, setAddresses] = useState<Address[]>([
-    {
-      id: 1,
-      name: "Nguyễn Văn A",
-      phone: "0901234567",
-      address: "123 Nguyễn Huệ",
-      ward: "Phường Bến Nghé",
-      district: "Quận 1",
-      city: "TP. Hồ Chí Minh",
-      type: "home",
-      isDefault: true,
-    },
-    {
-      id: 2,
-      name: "Nguyễn Văn A",
-      phone: "0901234567",
-      address: "456 Lê Lợi",
-      ward: "Phường Bến Thành",
-      district: "Quận 1",
-      city: "TP. Hồ Chí Minh",
-      type: "office",
-      isDefault: false,
-    },
-  ])
+  // Khởi tạo danh sách địa chỉ rỗng để loại bỏ dữ liệu ảo
+  const [addresses, setAddresses] = useState<Address[]>([])
 
   const [showAddForm, setShowAddForm] = useState(false)
   const [editingAddress, setEditingAddress] = useState<Address | null>(null)
@@ -97,56 +75,69 @@ export function AddressManager() {
             </Button>
           </div>
 
-          {addresses.map((address) => (
-            <Card key={address.id} className="relative">
-              <CardContent className="p-6">
-                <div className="flex justify-between items-start mb-4">
-                  <div className="flex items-center space-x-2">
-                    {getTypeIcon(address.type)}
-                    <span className="font-medium">{getTypeLabel(address.type)}</span>
-                    {address.isDefault && <Badge className="bg-green-100 text-green-800">Mặc định</Badge>}
-                  </div>
-                  <div className="flex space-x-2">
-                    <Button size="sm" variant="outline" onClick={() => setEditingAddress(address)}>
-                      <Edit className="w-4 h-4" />
-                    </Button>
-                    <Button size="sm" variant="outline" className="text-red-600 hover:text-red-700 bg-transparent">
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <div className="flex items-center space-x-2">
-                    <span className="font-medium">{address.name}</span>
-                    <span className="text-gray-500">|</span>
-                    <span className="text-gray-600">{address.phone}</span>
-                  </div>
-                  <p className="text-gray-700">
-                    {address.address}, {address.ward}, {address.district}, {address.city}
-                  </p>
-                </div>
-
-                {!address.isDefault && (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="mt-4 bg-transparent"
-                    onClick={() => {
-                      setAddresses(
-                        addresses.map((addr) => ({
-                          ...addr,
-                          isDefault: addr.id === address.id,
-                        })),
-                      )
-                    }}
-                  >
-                    Đặt làm mặc định
-                  </Button>
-                )}
+          {addresses.length === 0 ? (
+            <Card className="text-center py-12">
+              <CardContent>
+                <MapPin className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+                <h3 className="text-lg font-semibold text-gray-700 mb-2">Bạn chưa có địa chỉ giao hàng</h3>
+                <p className="text-gray-500 mb-4">Hãy thêm địa chỉ để tiện lợi khi đặt hàng lần sau</p>
+                <Button onClick={() => setShowAddForm(true)} className="bg-pink-500 hover:bg-pink-600">
+                  <Plus className="w-4 h-4 mr-2" /> Thêm địa chỉ mới
+                </Button>
               </CardContent>
             </Card>
-          ))}
+          ) : (
+            addresses.map((address) => (
+              <Card key={address.id} className="relative">
+                <CardContent className="p-6">
+                  <div className="flex justify-between items-start mb-4">
+                    <div className="flex items-center space-x-2">
+                      {getTypeIcon(address.type)}
+                      <span className="font-medium">{getTypeLabel(address.type)}</span>
+                      {address.isDefault && <Badge className="bg-green-100 text-green-800">Mặc định</Badge>}
+                    </div>
+                    <div className="flex space-x-2">
+                      <Button size="sm" variant="outline" onClick={() => setEditingAddress(address)}>
+                        <Edit className="w-4 h-4" />
+                      </Button>
+                      <Button size="sm" variant="outline" className="text-red-600 hover:text-red-700 bg-transparent">
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex items-center space-x-2">
+                      <span className="font-medium">{address.name}</span>
+                      <span className="text-gray-500">|</span>
+                      <span className="text-gray-600">{address.phone}</span>
+                    </div>
+                    <p className="text-gray-700">
+                      {address.address}, {address.ward}, {address.district}, {address.city}
+                    </p>
+                  </div>
+
+                  {!address.isDefault && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="mt-4 bg-transparent"
+                      onClick={() => {
+                        setAddresses(
+                          addresses.map((addr) => ({
+                            ...addr,
+                            isDefault: addr.id === address.id,
+                          })),
+                        )
+                      }}
+                    >
+                      Đặt làm mặc định
+                    </Button>
+                  )}
+                </CardContent>
+              </Card>
+            ))
+          )}
         </div>
 
         {/* Add/Edit Form */}

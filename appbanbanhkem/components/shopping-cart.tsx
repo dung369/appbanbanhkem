@@ -33,42 +33,8 @@ interface CartItem {
 }
 
 export function ShoppingCartComponent() {
-  const [cartItems, setCartItems] = useState<CartItem[]>([
-    {
-      id: 1,
-      name: "Bánh sinh nhật hoa hồng",
-      price: 450000,
-      originalPrice: 550000,
-      quantity: 1,
-      image: "/placeholder.svg?height=100&width=100",
-      size: "Tròn 20cm",
-      flavor: "Vanilla",
-      customization: "Viết chữ: Happy Birthday",
-      selected: true,
-    },
-    {
-      id: 2,
-      name: "Bánh Doraemon 3D",
-      price: 520000,
-      originalPrice: 620000,
-      quantity: 2,
-      image: "/placeholder.svg?height=100&width=100",
-      size: "Tròn 20cm",
-      flavor: "Chocolate",
-      selected: true,
-    },
-    {
-      id: 3,
-      name: "Bánh cưới 3 tầng",
-      price: 1200000,
-      originalPrice: 1400000,
-      quantity: 1,
-      image: "/placeholder.svg?height=100&width=100",
-      size: "3 tầng (15-20-25cm)",
-      flavor: "Vanilla & Chocolate",
-      selected: false,
-    },
-  ])
+  // Khởi tạo giỏ hàng rỗng để loại bỏ dữ liệu ảo
+  const [cartItems, setCartItems] = useState<CartItem[]>([])
 
   const [couponCode, setCouponCode] = useState("")
   const [appliedCoupon, setAppliedCoupon] = useState<string | null>(null)
@@ -79,7 +45,7 @@ export function ShoppingCartComponent() {
   }
 
   const removeItem = (id: number) => {
-    setCartItems((items) => items.filter((item) => item.id !== item))
+    setCartItems((items) => items.filter((item) => item.id !== id))
   }
 
   const toggleItemSelection = (id: number) => {

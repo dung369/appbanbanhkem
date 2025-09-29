@@ -3,36 +3,8 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Star, ShoppingCart } from "lucide-react"
 
-const bestSellers = [
-  {
-    name: "Bánh kem dâu tây",
-    price: "320.000đ",
-    rating: 4.8,
-    orders: 456,
-    image: "/placeholder.svg?height=200&width=200",
-  },
-  {
-    name: "Bánh chocolate đen",
-    price: "380.000đ",
-    rating: 4.9,
-    orders: 389,
-    image: "/placeholder.svg?height=200&width=200",
-  },
-  {
-    name: "Bánh red velvet",
-    price: "420.000đ",
-    rating: 4.7,
-    orders: 234,
-    image: "/placeholder.svg?height=200&width=200",
-  },
-  {
-    name: "Bánh tiramisu",
-    price: "450.000đ",
-    rating: 4.8,
-    orders: 178,
-    image: "/placeholder.svg?height=200&width=200",
-  },
-]
+type BestSeller = { name: string; price: string; rating: number; orders: number; image?: string }
+const bestSellers: BestSeller[] = []
 
 export function BestSellers() {
   return (
@@ -43,7 +15,12 @@ export function BestSellers() {
           <h2 className="text-3xl font-bold text-gray-900 mb-4">Những chiếc bánh được yêu thích nhất</h2>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {bestSellers.length === 0 ? (
+          <div className="border rounded-lg bg-white py-12 text-center text-gray-600">
+            Chưa có sản phẩm bán chạy. Sản phẩm sẽ hiển thị khi Admin thêm vào.
+          </div>
+        ) : (
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
           {bestSellers.map((cake, index) => (
             <Card key={index} className="group hover:shadow-lg transition-all duration-300">
               <div className="relative">
@@ -75,6 +52,7 @@ export function BestSellers() {
             </Card>
           ))}
         </div>
+        )}
       </div>
     </section>
   )
