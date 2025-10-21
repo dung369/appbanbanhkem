@@ -49,8 +49,13 @@ export function AuthForm() {
     setError(null)
     setLoading(true)
     try {
-      await signInWithEmailAndPassword(auth, loginData.email, loginData.password)
-      router.push("/admin")
+      const userCredential = await signInWithEmailAndPassword(auth, loginData.email, loginData.password)
+      // Kiểm tra nếu là admin thì chuyển đến trang admin, không thì về trang chủ
+      if (userCredential.user.email === "trandaidung9a1@gmail.com") {
+        router.push("/admin")
+      } else {
+        router.push("/")
+      }
     } catch (err: any) {
       setError(err?.message || "Đăng nhập thất bại")
     } finally {
@@ -71,7 +76,8 @@ export function AuthForm() {
       if (registerData.fullName) {
         await updateProfile(cred.user, { displayName: registerData.fullName })
       }
-      router.push("/admin")
+      // User thường sau khi đăng ký sẽ về trang chủ
+      router.push("/")
     } catch (err: any) {
       setError(err?.message || "Đăng ký thất bại")
     } finally {
