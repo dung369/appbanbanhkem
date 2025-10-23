@@ -1,10 +1,8 @@
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { KidsCakeHero } from "@/components/kids-cake-hero"
-import { ProductGrid } from "@/components/product-grid"
+import { ProductList } from "@/components/product-list"
 import { CategoryFilters } from "@/components/category-filters"
-
-// Dữ liệu sản phẩm sẽ do Admin thêm, hiện không truyền danh sách mặc định
 
 export default function KidsCakePage() {
   return (
@@ -17,7 +15,11 @@ export default function KidsCakePage() {
             <CategoryFilters category="kids" />
           </div>
           <div className="lg:col-span-3">
-            <ProductGrid />
+            <ProductList
+              category="kids"
+              title="Bánh Trẻ Em"
+              description="Bánh dành cho các bé yêu"
+            />
           </div>
         </div>
       </div>

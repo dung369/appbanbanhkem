@@ -1,10 +1,8 @@
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { WeddingCakeHero } from "@/components/wedding-cake-hero"
-import { ProductGrid } from "@/components/product-grid"
+import { ProductList } from "@/components/product-list"
 import { CategoryFilters } from "@/components/category-filters"
-
-// Dữ liệu sản phẩm sẽ do Admin thêm, hiện không truyền danh sách mặc định
 
 export default function WeddingCakePage() {
   return (
@@ -17,7 +15,11 @@ export default function WeddingCakePage() {
             <CategoryFilters category="wedding" />
           </div>
           <div className="lg:col-span-3">
-            <ProductGrid />
+            <ProductList
+              category="wedding"
+              title="Bánh Cưới"
+              description="Những mẫu bánh cưới sang trọng và lãng mạn"
+            />
           </div>
         </div>
       </div>

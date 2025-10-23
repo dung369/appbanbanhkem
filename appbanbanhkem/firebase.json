@@ -1,4 +1,11 @@
 {
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "storage": {
+    "rules": "storage.rules"
+  },
   "hosting": {
     "site": "webbanhoa-26a60-2d2fa",
     "public": "public",

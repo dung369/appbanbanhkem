@@ -1,10 +1,8 @@
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { HotTrendHero } from "@/components/hot-trend-hero"
-import { ProductGrid } from "@/components/product-grid"
+import { ProductList } from "@/components/product-list"
 import { CategoryFilters } from "@/components/category-filters"
-
-// Dữ liệu sản phẩm sẽ do Admin thêm, hiện không truyền danh sách mặc định
 
 export default function HotTrendPage() {
   return (
@@ -17,7 +15,11 @@ export default function HotTrendPage() {
             <CategoryFilters category="hottrend" />
           </div>
           <div className="lg:col-span-3">
-            <ProductGrid />
+            <ProductList
+              category="hot-trend"
+              title="🔥 Hot Trend"
+              description="Những sản phẩm đang được yêu thích nhất"
+            />
           </div>
         </div>
       </div>

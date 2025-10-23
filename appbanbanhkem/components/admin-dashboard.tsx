@@ -1,14 +1,17 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { auth } from "@/lib/firebase"
+import { auth, db } from "@/lib/firebase"
 import { signOut } from "firebase/auth"
+import { collection, getDocs, deleteDoc, doc, query, orderBy } from "firebase/firestore"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { AddProductModal } from "@/components/add-product-modal"
+import { ProductCard } from "@/components/product-card"
 import {
   BarChart3,
   ShoppingCart,
@@ -23,19 +26,129 @@ import {
   Download,
   Bell,
   LogOut,
+  Loader2,
 } from "lucide-react"
+
+interface Product {
+  id: string
+  name: string
+  description: string
+  price: number
+  originalPrice?: number
+  rating: number
+  orders: number
+  imageUrl: string
+  category: string
+  size: string
+  flavor: string
+  isCustomizable: boolean
+  isTrending?: boolean
+  isBestSeller?: boolean
+  stock: number
+  status: string
+  createdAt: any
+}
 
 export function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("dashboard")
   const [showFilterModal, setShowFilterModal] = useState(false)
+  const [showAddProductModal, setShowAddProductModal] = useState(false)
+  const [products, setProducts] = useState<Product[]>([])
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>([])
+  const [loading, setLoading] = useState(true)
+  const [mounted, setMounted] = useState(false)
+  const [searchQuery, setSearchQuery] = useState("")
+  const [categoryFilter, setCategoryFilter] = useState("all")
   const router = useRouter()
+
+  // Load products from Firestore
+  const loadProducts = async () => {
+    // Check if we're on client-side and db is available
+    if (typeof window === "undefined" || !db) {
+      setLoading(false)
+      return
+    }
+
+    setLoading(true)
+    
+    try {
+      // Simple query without orderBy to avoid index requirement
+      const q = query(collection(db, "products"))
+      const querySnapshot = await getDocs(q)
+      
+      const productsData = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      })) as Product[]
+      
+      // Sort in memory by createdAt
+      productsData.sort((a, b) => {
+        const timeA = a.createdAt?.toMillis?.() || 0
+        const timeB = b.createdAt?.toMillis?.() || 0
+        return timeB - timeA
+      })
+      
+      setProducts(productsData)
+      setFilteredProducts(productsData)
+    } catch (error) {
+      console.error("Error loading products:", error)
+      // Set empty array on error to show empty state
+      setProducts([])
+      setFilteredProducts([])
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Mount check
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  // Load products only after component is mounted
+  useEffect(() => {
+    if (mounted) {
+      loadProducts()
+    }
+  }, [mounted])
+
+  // Filter products
+  useEffect(() => {
+    let filtered = products
+
+    if (searchQuery) {
+      filtered = filtered.filter((p) =>
+        p.name.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    }
+
+    if (categoryFilter !== "all") {
+      filtered = filtered.filter((p) => p.category === categoryFilter)
+    }
+
+    setFilteredProducts(filtered)
+  }, [searchQuery, categoryFilter, products])
+
+  // Delete product
+  const handleDeleteProduct = async (productId: string) => {
+    if (!confirm("Bạn có chắc chắn muốn xóa sản phẩm này?")) return
+
+    try {
+      await deleteDoc(doc(db, "products", productId))
+      loadProducts()
+      alert("Xóa sản phẩm thành công!")
+    } catch (error) {
+      console.error("Error deleting product:", error)
+      alert("Có lỗi xảy ra khi xóa sản phẩm!")
+    }
+  }
 
   // Mock data
   const stats = {
     totalOrders: 0,
     totalRevenue: 0,
     totalCustomers: 0,
-    totalProducts: 0,
+    totalProducts: products.length,
   }
 
   // Start with zero/empty data – ready for real integrations
@@ -46,16 +159,6 @@ export function AdminDashboard() {
     amount: number
     status: string
     date: string
-  }> = []
-
-  const products: Array<{
-    id: number
-    name: string
-    category: string
-    price: number
-    stock: number
-    status: string
-    image?: string
   }> = []
 
   const getStatusBadge = (status: string) => {
@@ -601,66 +704,142 @@ export function AdminDashboard() {
               {/* Actions */}
               <div className="flex justify-between items-center">
                 <div className="flex space-x-4">
-                  <Input placeholder="Tìm kiếm sản phẩm..." className="w-64" />
-                  <Select>
-                    <SelectTrigger className="w-[150px]">
+                  <Input
+                    placeholder="Tìm kiếm sản phẩm..."
+                    className="w-64"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                  <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                    <SelectTrigger className="w-[200px]">
                       <SelectValue placeholder="Danh mục" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">Tất cả</SelectItem>
+                      <SelectItem value="all">Tất cả danh mục</SelectItem>
+                      <SelectItem value="home">Trang chủ (Bán chạy)</SelectItem>
                       <SelectItem value="birthday">Bánh sinh nhật</SelectItem>
                       <SelectItem value="wedding">Bánh cưới</SelectItem>
+                      <SelectItem value="event">Bánh sự kiện</SelectItem>
                       <SelectItem value="kids">Bánh trẻ em</SelectItem>
+                      <SelectItem value="hot-trend">🔥 Hot Trend</SelectItem>
+                      <SelectItem value="beverage">Đồ uống</SelectItem>
+                      <SelectItem value="snack">Đồ ăn vặt</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
-                <Button className="bg-pink-500 hover:bg-pink-600">
+                <Button
+                  className="bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600"
+                  onClick={() => setShowAddProductModal(true)}
+                >
                   <Plus className="w-4 h-4 mr-2" />
                   Thêm sản phẩm
                 </Button>
               </div>
 
               {/* Products Grid */}
-              {products.length === 0 ? (
+              {loading ? (
                 <Card>
-                  <CardContent className="p-10 text-center text-gray-500">
-                    Chưa có sản phẩm
+                  <CardContent className="p-10 text-center">
+                    <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-pink-500" />
+                    <p className="text-gray-500">Đang tải sản phẩm...</p>
+                  </CardContent>
+                </Card>
+              ) : filteredProducts.length === 0 ? (
+                <Card>
+                  <CardContent className="p-10 text-center">
+                    <Package className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+                    <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                      {searchQuery || categoryFilter !== "all" ? "Không tìm thấy sản phẩm" : "Chưa có sản phẩm"}
+                    </h3>
+                    <p className="text-gray-500 mb-4">
+                      {searchQuery || categoryFilter !== "all"
+                        ? "Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm"
+                        : "Nhấn nút 'Thêm sản phẩm' để bắt đầu"}
+                    </p>
+                    {!searchQuery && categoryFilter === "all" && (
+                      <Button
+                        className="bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600"
+                        onClick={() => setShowAddProductModal(true)}
+                      >
+                        <Plus className="w-4 h-4 mr-2" />
+                        Thêm sản phẩm đầu tiên
+                      </Button>
+                    )}
                   </CardContent>
                 </Card>
               ) : (
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {products.map((product) => (
-                    <Card key={product.id}>
-                      <CardContent className="p-6">
-                        <div className="flex items-start space-x-4">
+                <>
+                  <div className="flex items-center justify-between mb-4">
+                    <p className="text-sm text-gray-600">
+                      Hiển thị {filteredProducts.length} / {products.length} sản phẩm
+                    </p>
+                  </div>
+                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {filteredProducts.map((product) => (
+                      <Card key={product.id} className="overflow-hidden">
+                        <div className="relative">
                           <img
-                            src={product.image || "/placeholder.svg"}
+                            src={product.imageUrl || "/placeholder.svg"}
                             alt={product.name}
-                            className="w-16 h-16 object-cover rounded-lg"
+                            className="w-full h-48 object-cover"
                           />
-                          <div className="flex-1 space-y-2">
-                            <h3 className="font-semibold">{product.name}</h3>
-                            <p className="text-sm text-gray-600">{product.category}</p>
-                            <div className="flex items-center justify-between">
-                              <span className="font-bold text-pink-600">{product.price.toLocaleString()}đ</span>
-                              {getProductStatusBadge(product.status)}
-                            </div>
-                            <p className="text-sm text-gray-600">Tồn kho: {product.stock}</p>
+                          <div className="absolute top-3 left-3 flex flex-col gap-2">
+                            {product.isTrending && (
+                              <Badge className="bg-red-500 text-white">🔥 Hot</Badge>
+                            )}
+                            {product.isBestSeller && (
+                              <Badge className="bg-yellow-500 text-white">Bán chạy</Badge>
+                            )}
                           </div>
+                          {getProductStatusBadge(product.status)}
                         </div>
-                        <div className="flex space-x-2 mt-4">
-                          <Button size="sm" variant="outline" className="flex-1 bg-transparent">
-                            <Edit className="w-4 h-4 mr-2" />
-                            Sửa
-                          </Button>
-                          <Button size="sm" variant="outline" className="text-red-600 bg-transparent">
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
+                        <CardContent className="p-4">
+                          <div className="space-y-3">
+                            <div>
+                              <h3 className="font-semibold text-lg line-clamp-1">{product.name}</h3>
+                              <p className="text-sm text-gray-600 line-clamp-2">{product.description}</p>
+                            </div>
+                            <div className="flex items-center justify-between text-sm">
+                              <span className="text-gray-600">{product.category}</span>
+                              <span className="text-gray-600">Tồn: {product.stock}</span>
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <span className="text-xl font-bold text-pink-600">
+                                  {product.price.toLocaleString()}đ
+                                </span>
+                                {product.originalPrice && (
+                                  <span className="text-sm text-gray-400 line-through ml-2">
+                                    {product.originalPrice.toLocaleString()}đ
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                            <div className="flex space-x-2">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="flex-1"
+                                onClick={() => router.push(`/san-pham/${product.id}`)}
+                              >
+                                <Eye className="w-4 h-4 mr-2" />
+                                Xem chi tiết
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="text-red-600 hover:bg-red-50"
+                                onClick={() => handleDeleteProduct(product.id)}
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </>
               )}
             </div>
           )}
@@ -680,6 +859,16 @@ export function AdminDashboard() {
           )}
         </div>
       </div>
+
+      {/* Add Product Modal */}
+      <AddProductModal
+        isOpen={showAddProductModal}
+        onClose={() => setShowAddProductModal(false)}
+        onSuccess={() => {
+          loadProducts()
+          alert("Thêm sản phẩm thành công!")
+        }}
+      />
 
       {/* Filter Modal */}
       {showFilterModal && (

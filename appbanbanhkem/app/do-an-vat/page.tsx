@@ -1,7 +1,7 @@
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { SnackHero } from "@/components/snack-hero"
-import { SnackGrid } from "@/components/snack-grid"
+import { ProductList } from "@/components/product-list"
 import { CategoryFilters } from "@/components/category-filters"
 
 export default function SnackPage() {
@@ -15,7 +15,11 @@ export default function SnackPage() {
             <CategoryFilters category="snacks" />
           </div>
           <div className="lg:col-span-3">
-            <SnackGrid />
+            <ProductList
+              category="snack"
+              title="Đồ Ăn Vặt Ngon"
+              description="Các món ăn vặt thơm ngon hấp dẫn"
+            />
           </div>
         </div>
       </div>

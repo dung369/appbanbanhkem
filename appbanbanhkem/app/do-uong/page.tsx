@@ -1,7 +1,7 @@
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { BeverageHero } from "@/components/beverage-hero"
-import { BeverageGrid } from "@/components/beverage-grid"
+import { ProductList } from "@/components/product-list"
 import { CategoryFilters } from "@/components/category-filters"
 
 export default function BeveragePage() {
@@ -15,7 +15,11 @@ export default function BeveragePage() {
             <CategoryFilters category="beverages" />
           </div>
           <div className="lg:col-span-3">
-            <BeverageGrid />
+            <ProductList
+              category="beverage"
+              title="Đồ Uống Tươi Mát"
+              description="Các loại đồ uống ngon và tươi mát"
+            />
           </div>
         </div>
       </div>

@@ -1,10 +1,8 @@
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { EventCakeHero } from "@/components/event-cake-hero"
-import { ProductGrid } from "@/components/product-grid"
+import { ProductList } from "@/components/product-list"
 import { CategoryFilters } from "@/components/category-filters"
-
-// Dữ liệu sản phẩm sẽ do Admin thêm, hiện không truyền danh sách mặc định
 
 export default function EventCakePage() {
   return (
@@ -17,7 +15,11 @@ export default function EventCakePage() {
             <CategoryFilters category="event" />
           </div>
           <div className="lg:col-span-3">
-            <ProductGrid />
+            <ProductList
+              category="event"
+              title="Bánh Sự Kiện"
+              description="Bánh cho các sự kiện đặc biệt"
+            />
           </div>
         </div>
       </div>

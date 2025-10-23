@@ -19,7 +19,9 @@ const firebaseConfig = {
 };
 
 // Ensure we don't initialize more than once (Next.js can render multiple times)
-export const firebaseApp = getApps().length ? getApp() : initializeApp(firebaseConfig);
+export const firebaseApp = getApps().length
+  ? getApp()
+  : initializeApp(firebaseConfig);
 
 // Initialize Analytics only on the client, and only if supported by the current environment
 export async function initAnalytics() {
@@ -36,4 +38,12 @@ export async function initAnalytics() {
 }
 
 // Auth instance for client-side authentication flows
-export const auth = typeof window !== "undefined" ? getAuth(firebaseApp) : (undefined as unknown as ReturnType<typeof getAuth>);
+export const auth = getAuth(firebaseApp);
+
+// Firestore instance for database operations
+import { getFirestore } from "firebase/firestore";
+export const db = getFirestore(firebaseApp);
+
+// Storage instance for file uploads
+import { getStorage } from "firebase/storage";
+export const storage = getStorage(firebaseApp);
