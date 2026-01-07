@@ -56,8 +56,8 @@ export function Hero() {
           <div className="relative">
             <Card className="p-8 bg-white/80 backdrop-blur-sm shadow-xl">
               <img
-                src="/placeholder.svg?height=400&width=400"
-                alt="Bánh kem đẹp"
+                src="/hero-cake-shop.jpg"
+                alt="SweetCake - Tiệm bánh kem tươi ngon"
                 className="w-full h-80 object-cover rounded-lg"
               />
               <div className="absolute -top-4 -right-4 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold">

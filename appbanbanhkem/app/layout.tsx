@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Roboto_Mono } from "next/font/google";
 import "./globals.css";
 import FirebaseAnalyticsClient from "@/components/firebase-analytics-client";
-import SiteChatFab from "@/components/site-chat-fab";
+import { ChatWidget } from "@/components/chat-widget";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -30,8 +30,8 @@ export default function RootLayout({
         {/* Initialize Firebase Analytics on client only */}
         <FirebaseAnalyticsClient />
         {children}
-        {/* Floating chat button visible globally except /admin */}
-        <SiteChatFab />
+        {/* AI Chatbot with Claude Haiku 4.5 */}
+        <ChatWidget position="bottom-right" />
       </body>
     </html>
   );
