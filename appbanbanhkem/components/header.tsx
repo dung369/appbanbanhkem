@@ -12,12 +12,14 @@ import {
   Gift,
   Mail,
   Zap,
+  Settings,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { MiniGameWheel } from "@/components/mini-game-wheel";
+import { SettingsPanel } from "@/components/settings-panel";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { auth } from "@/lib/firebase";
@@ -26,6 +28,7 @@ import { onAuthStateChanged, signOut, type User as FirebaseUser } from "firebase
 export function Header() {
   const [showSpecialFeatures, setShowSpecialFeatures] = useState(false);
   const [showMiniGame, setShowMiniGame] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const [user, setUser] = useState<FirebaseUser | null>(null);
   const router = useRouter();
 
@@ -72,16 +75,6 @@ export function Header() {
 
           {/* Actions */}
           <div className="flex items-center space-x-4">
-            <Link href="/dia-chi">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="flex items-center space-x-1"
-              >
-                <MapPin className="w-4 h-4" />
-                <span className="hidden md:inline">Địa chỉ</span>
-              </Button>
-            </Link>
             <Button variant="ghost" size="sm">
               <Heart className="w-4 h-4" />
             </Button>
@@ -108,6 +101,14 @@ export function Header() {
                 </Button>
               </Link>
             )}
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={() => setShowSettings(true)}
+              title="Cài đặt"
+            >
+              <Settings className="w-4 h-4" />
+            </Button>
             <Link href="/gio-hang">
               <Button variant="ghost" size="sm" className="relative">
                 <ShoppingCart className="w-4 h-4" />
@@ -286,6 +287,13 @@ export function Header() {
       <MiniGameWheel
         isOpen={showMiniGame}
         onClose={() => setShowMiniGame(false)}
+      />
+
+      {/* Settings Panel */}
+      <SettingsPanel
+        isOpen={showSettings}
+        onClose={() => setShowSettings(false)}
+        user={user}
       />
 
       {/* Click outside to close dropdown - Fixed z-index */}

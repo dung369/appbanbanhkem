@@ -27,6 +27,12 @@ import {
   Bell,
   LogOut,
   Loader2,
+  MapPin,
+  X,
+  Home,
+  Building,
+  User,
+  Phone,
 } from "lucide-react"
 
 interface Product {
@@ -49,12 +55,39 @@ interface Product {
   createdAt: any
 }
 
+interface Customer {
+  uid: string
+  email: string | null
+  displayName: string | null
+  phoneNumber: string | null
+  emailVerified: boolean
+  createdAt: string
+  lastLogin: string
+  addressCount: number
+}
+
+interface Address {
+  id: string
+  name: string
+  phone: string
+  address: string
+  ward: string
+  district: string
+  city: string
+  type: "home" | "office" | "other"
+  isDefault: boolean
+}
+
 export function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("dashboard")
   const [showFilterModal, setShowFilterModal] = useState(false)
   const [showAddProductModal, setShowAddProductModal] = useState(false)
   const [products, setProducts] = useState<Product[]>([])
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([])
+  const [customers, setCustomers] = useState<Customer[]>([])
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null)
+  const [customerAddresses, setCustomerAddresses] = useState<Address[]>([])
+  const [showAddressModal, setShowAddressModal] = useState(false)
   const [loading, setLoading] = useState(true)
   const [mounted, setMounted] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
@@ -100,9 +133,82 @@ export function AdminDashboard() {
     }
   }
 
+  // Load customers data
+  const loadCustomers = async () => {
+    if (typeof window === "undefined") return
+
+    try {
+      // Get all users who have registered
+      // We'll get this from localStorage addresses
+      const customersList: Customer[] = []
+      
+      // Get all localStorage keys
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i)
+        if (key?.startsWith('addresses_')) {
+          const uid = key.replace('addresses_', '')
+          const addresses = JSON.parse(localStorage.getItem(key) || '[]')
+          
+          // Try to get user info from auth or create placeholder
+          customersList.push({
+            uid: uid,
+            email: uid.includes('@') ? uid : `user_${uid.slice(0, 8)}@example.com`,
+            displayName: addresses[0]?.name || 'Khách hàng',
+            phoneNumber: addresses[0]?.phone || null,
+            emailVerified: false,
+            createdAt: new Date().toISOString(),
+            lastLogin: new Date().toISOString(),
+            addressCount: addresses.length
+          })
+        }
+      }
+
+      // Add current logged in users info
+      if (auth.currentUser && !customersList.find(c => c.uid === auth.currentUser?.uid)) {
+        const user = auth.currentUser
+        const addresses = JSON.parse(localStorage.getItem(`addresses_${user.uid}`) || '[]')
+        customersList.push({
+          uid: user.uid,
+          email: user.email,
+          displayName: user.displayName || 'Người dùng',
+          phoneNumber: user.phoneNumber,
+          emailVerified: user.emailVerified,
+          createdAt: user.metadata.creationTime || new Date().toISOString(),
+          lastLogin: user.metadata.lastSignInTime || new Date().toISOString(),
+          addressCount: addresses.length
+        })
+      }
+
+      setCustomers(customersList)
+    } catch (error) {
+      console.error("Error loading customers:", error)
+      setCustomers([])
+    }
+  }
+
+  // View customer addresses
+  const viewCustomerAddresses = (customer: Customer) => {
+    const addresses = JSON.parse(localStorage.getItem(`addresses_${customer.uid}`) || '[]')
+    setCustomerAddresses(addresses)
+    setSelectedCustomer(customer)
+    setShowAddressModal(true)
+  }
+
+  const getTypeLabel = (type: string) => {
+    switch (type) {
+      case "home":
+        return "Nhà riêng"
+      case "office":
+        return "Văn phòng"
+      default:
+        return "Khác"
+    }
+  }
+
   // Mount check
   useEffect(() => {
     setMounted(true)
+    loadCustomers()
   }, [])
 
   // Load products only after component is mounted
@@ -849,12 +955,139 @@ export function AdminDashboard() {
             <div className="space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>Danh sách khách hàng</CardTitle>
+                  <CardTitle>Danh sách khách hàng ({customers.length})</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-gray-600">Chưa có khách hàng</p>
+                  {customers.length === 0 ? (
+                    <div className="text-center py-12">
+                      <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                      <p className="text-gray-600">Chưa có khách hàng nào đăng ký</p>
+                    </div>
+                  ) : (
+                    <div className="overflow-x-auto">
+                      <table className="w-full">
+                        <thead>
+                          <tr className="border-b">
+                            <th className="text-left py-3 px-4 font-medium text-gray-700">Họ tên</th>
+                            <th className="text-left py-3 px-4 font-medium text-gray-700">Email</th>
+                            <th className="text-left py-3 px-4 font-medium text-gray-700">Số điện thoại</th>
+                            <th className="text-left py-3 px-4 font-medium text-gray-700">Địa chỉ</th>
+                            <th className="text-left py-3 px-4 font-medium text-gray-700">Xác thực</th>
+                            <th className="text-left py-3 px-4 font-medium text-gray-700">Ngày tạo</th>
+                            <th className="text-left py-3 px-4 font-medium text-gray-700">Đăng nhập gần nhất</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {customers.map((customer) => (
+                            <tr 
+                              key={customer.uid} 
+                              className="border-b hover:bg-gray-50 cursor-pointer transition-colors"
+                              onClick={() => viewCustomerAddresses(customer)}
+                            >
+                              <td className="py-3 px-4">
+                                <div className="flex items-center space-x-3">
+                                  <div className="w-10 h-10 bg-gradient-to-r from-pink-500 to-purple-500 rounded-full flex items-center justify-center">
+                                    <span className="text-white font-medium">
+                                      {customer.displayName?.charAt(0).toUpperCase() || 'U'}
+                                    </span>
+                                  </div>
+                                  <div>
+                                    <div className="font-medium text-gray-900">
+                                      {customer.displayName || 'Chưa cập nhật'}
+                                    </div>
+                                    <div className="text-xs text-gray-500">ID: {customer.uid.slice(0, 8)}...</div>
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="py-3 px-4">
+                                <div className="text-sm text-gray-900">{customer.email || 'Chưa có'}</div>
+                              </td>
+                              <td className="py-3 px-4">
+                                <div className="text-sm text-gray-900">{customer.phoneNumber || 'Chưa có'}</div>
+                              </td>
+                              <td className="py-3 px-4">
+                                <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100">
+                                  {customer.addressCount} địa chỉ
+                                </Badge>
+                              </td>
+                              <td className="py-3 px-4">
+                                {customer.emailVerified ? (
+                                  <Badge className="bg-green-100 text-green-800">
+                                    ✓ Đã xác thực
+                                  </Badge>
+                                ) : (
+                                  <Badge variant="outline" className="bg-gray-100 text-gray-600">
+                                    Chưa xác thực
+                                  </Badge>
+                                )}
+                              </td>
+                              <td className="py-3 px-4">
+                                <div className="text-sm text-gray-600">
+                                  {new Date(customer.createdAt).toLocaleDateString('vi-VN')}
+                                </div>
+                                <div className="text-xs text-gray-400">
+                                  {new Date(customer.createdAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
+                                </div>
+                              </td>
+                              <td className="py-3 px-4">
+                                <div className="text-sm text-gray-600">
+                                  {new Date(customer.lastLogin).toLocaleDateString('vi-VN')}
+                                </div>
+                                <div className="text-xs text-gray-400">
+                                  {new Date(customer.lastLogin).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
+
+              {/* Customer Statistics */}
+              <div className="grid md:grid-cols-3 gap-6">
+                <Card>
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-gray-600">Tổng khách hàng</p>
+                        <p className="text-2xl font-bold">{customers.length}</p>
+                      </div>
+                      <Users className="w-8 h-8 text-purple-500" />
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-gray-600">Đã xác thực email</p>
+                        <p className="text-2xl font-bold">
+                          {customers.filter(c => c.emailVerified).length}
+                        </p>
+                      </div>
+                      <Badge className="bg-green-500 text-white">✓</Badge>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-gray-600">Có địa chỉ giao hàng</p>
+                        <p className="text-2xl font-bold">
+                          {customers.filter(c => c.addressCount > 0).length}
+                        </p>
+                      </div>
+                      <MapPin className="w-8 h-8 text-blue-500" />
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
             </div>
           )}
         </div>
@@ -909,6 +1142,103 @@ export function AdminDashboard() {
                 Hủy
               </Button>
               <Button className="bg-red-500 hover:bg-red-600">Xóa</Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Customer Address Modal */}
+      {showAddressModal && selectedCustomer && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-pink-500 to-purple-500 text-white p-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                  <div className="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                    <span className="text-2xl font-bold">
+                      {selectedCustomer.displayName?.charAt(0).toUpperCase() || 'U'}
+                    </span>
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-bold">{selectedCustomer.displayName}</h2>
+                    <p className="text-pink-100">{selectedCustomer.email}</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowAddressModal(false)}
+                  className="w-10 h-10 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-full flex items-center justify-center transition-colors"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 overflow-y-auto p-6">
+              <h3 className="text-lg font-semibold mb-4 flex items-center">
+                <MapPin className="w-5 h-5 mr-2 text-pink-500" />
+                Địa chỉ giao hàng ({customerAddresses.length})
+              </h3>
+
+              {customerAddresses.length === 0 ? (
+                <div className="text-center py-12">
+                  <MapPin className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                  <p className="text-gray-500">Khách hàng chưa có địa chỉ giao hàng</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {customerAddresses.map((address) => (
+                    <Card key={address.id} className="hover:shadow-md transition-shadow">
+                      <CardContent className="p-5">
+                        <div className="flex items-start justify-between mb-3">
+                          <div className="flex items-center space-x-2">
+                            {address.type === "home" && <Home className="w-5 h-5 text-blue-500" />}
+                            {address.type === "office" && <Building className="w-5 h-5 text-purple-500" />}
+                            {address.type === "other" && <User className="w-5 h-5 text-gray-500" />}
+                            <span className="font-medium text-gray-900">{getTypeLabel(address.type)}</span>
+                            {address.isDefault && (
+                              <Badge className="bg-green-100 text-green-800 border-green-200">
+                                Mặc định
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <div className="flex items-center space-x-2">
+                            <User className="w-4 h-4 text-gray-400" />
+                            <span className="font-medium text-gray-900">{address.name}</span>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <Phone className="w-4 h-4 text-gray-400" />
+                            <span className="text-gray-700">{address.phone}</span>
+                          </div>
+                          <div className="flex items-start space-x-2">
+                            <MapPin className="w-4 h-4 text-gray-400 mt-1" />
+                            <div className="text-gray-700">
+                              <div>{address.address}</div>
+                              <div className="text-sm text-gray-500">
+                                {address.ward}, {address.district}, {address.city}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="border-t p-4 bg-gray-50">
+              <Button
+                variant="outline"
+                className="w-full bg-transparent"
+                onClick={() => setShowAddressModal(false)}
+              >
+                Đóng
+              </Button>
             </div>
           </div>
         </div>
