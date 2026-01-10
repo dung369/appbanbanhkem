@@ -23,9 +23,15 @@ import { SettingsPanel } from "@/components/settings-panel";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { auth } from "@/lib/firebase";
-import { onAuthStateChanged, signOut, type User as FirebaseUser } from "firebase/auth";
+import {
+  onAuthStateChanged,
+  signOut,
+  type User as FirebaseUser,
+} from "firebase/auth";
+import { useTranslation } from "@/lib/translations";
 
 export function Header() {
+  const { t } = useTranslation();
   const [showSpecialFeatures, setShowSpecialFeatures] = useState(false);
   const [showMiniGame, setShowMiniGame] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
@@ -42,9 +48,7 @@ export function Header() {
       {/* Top bar */}
       <div className="bg-pink-50 py-2">
         <div className="container mx-auto px-4 text-center">
-          <p className="text-sm text-pink-700">
-            🎂 Miễn phí giao hàng cho đơn từ 500k - Giao hàng toàn quốc 🚚
-          </p>
+          <p className="text-sm text-pink-700">{t.freeShipping}</p>
         </div>
       </div>
 
@@ -54,7 +58,11 @@ export function Header() {
           {/* Logo */}
           <Link href="/">
             <div className="flex items-center space-x-2 cursor-pointer">
-              <img src="/favicon.ico" alt="Logo" className="w-10 h-10 rounded" />
+              <img
+                src="/favicon.ico"
+                alt="Logo"
+                className="w-10 h-10 rounded"
+              />
               <div>
                 <h1 className="text-2xl font-bold text-pink-600">SweetCake</h1>
                 <p className="text-xs text-gray-500">Bánh kem</p>
@@ -67,7 +75,7 @@ export function Header() {
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
               <Input
-                placeholder="Tìm bánh sinh nhật, bánh cưới..."
+                placeholder={t.search}
                 className="pl-10 pr-4 py-2 w-full"
               />
             </div>
@@ -81,7 +89,7 @@ export function Header() {
             {user ? (
               <div className="flex items-center space-x-2">
                 <span className="hidden md:inline text-sm text-gray-700">
-                  Xin chào, {user.displayName || user.email?.split("@")[0]}
+                  {t.hello}, {user.displayName || user.email?.split("@")[0]}
                 </span>
                 <Button
                   variant="ghost"
@@ -91,7 +99,7 @@ export function Header() {
                     router.refresh();
                   }}
                 >
-                  Đăng xuất
+                  {t.logout}
                 </Button>
               </div>
             ) : (
@@ -101,11 +109,11 @@ export function Header() {
                 </Button>
               </Link>
             )}
-            <Button 
-              variant="ghost" 
+            <Button
+              variant="ghost"
               size="sm"
               onClick={() => setShowSettings(true)}
-              title="Cài đặt"
+              title={t.settings}
             >
               <Settings className="w-4 h-4" />
             </Button>
@@ -124,34 +132,34 @@ export function Header() {
           <div className="flex items-center justify-center space-x-8">
             <Link href="/">
               <Button variant="ghost" className="text-pink-600 font-medium">
-                Trang chủ
+                {t.home}
               </Button>
             </Link>
             <Link href="/banh-sinh-nhat">
-              <Button variant="ghost">Bánh sinh nhật</Button>
+              <Button variant="ghost">{t.birthdayCakes}</Button>
             </Link>
             <Link href="/banh-cuoi">
-              <Button variant="ghost">Bánh cưới</Button>
+              <Button variant="ghost">{t.weddingCakes}</Button>
             </Link>
             <Link href="/banh-su-kien">
-              <Button variant="ghost">Bánh sự kiện</Button>
+              <Button variant="ghost">{t.customCakes}</Button>
             </Link>
             <Link href="/banh-tre-em">
-              <Button variant="ghost">Bánh trẻ em</Button>
+              <Button variant="ghost">{t.kidsCakes}</Button>
             </Link>
             <Link href="/hot-trend">
               <Button
                 variant="ghost"
                 className="bg-gradient-to-r from-pink-500 to-purple-500 text-white"
               >
-                🔥 Hot Trend
+                🔥 {t.hotTrend}
               </Button>
             </Link>
             <Link href="/tuy-chinh-banh">
-              <Button variant="ghost">Tùy chỉnh bánh</Button>
+              <Button variant="ghost">{t.customDesign}</Button>
             </Link>
             <Link href="/phu-kien">
-              <Button variant="ghost">Phụ kiện</Button>
+              <Button variant="ghost">{t.accessories}</Button>
             </Link>
 
             {/* Special Features Dropdown */}
@@ -162,7 +170,7 @@ export function Header() {
                 onClick={() => setShowSpecialFeatures(!showSpecialFeatures)}
               >
                 <Sparkles className="w-4 h-4" />
-                <span>Tính năng đặc biệt</span>
+                <span>{t.specialFeatures}</span>
                 <ChevronDown className="w-4 h-4" />
               </Button>
 
@@ -175,10 +183,10 @@ export function Header() {
                       </div>
                       <div>
                         <div className="font-medium text-gray-900">
-                          Live Custom Bánh
+                          {t.liveCustomTitle}
                         </div>
                         <div className="text-sm text-gray-500">
-                          Thiết kế bánh trực tiếp
+                          {t.liveCustomDesc}
                         </div>
                       </div>
                     </div>
@@ -191,10 +199,10 @@ export function Header() {
                       </div>
                       <div>
                         <div className="font-medium text-gray-900">
-                          Tặng quà bất ngờ
+                          {t.giftSurpriseTitle}
                         </div>
                         <div className="text-sm text-gray-500">
-                          Giao hàng bí mật
+                          {t.giftSurpriseMenuDesc}
                         </div>
                       </div>
                     </div>
@@ -207,10 +215,10 @@ export function Header() {
                       </div>
                       <div>
                         <div className="font-medium text-gray-900">
-                          Thiệp điện tử
+                          {t.digitalCardTitle}
                         </div>
                         <div className="text-sm text-gray-500">
-                          Thiết kế thiệp online
+                          {t.digitalCardDesc}
                         </div>
                       </div>
                     </div>
@@ -223,10 +231,10 @@ export function Header() {
                       </div>
                       <div>
                         <div className="font-medium text-gray-900">
-                          Đồ uống tươi mát
+                          {t.beverageMenuTitle}
                         </div>
                         <div className="text-sm text-gray-500">
-                          Trà sữa, cà phê, nước ép
+                          {t.beverageMenuDesc}
                         </div>
                       </div>
                     </div>
@@ -239,10 +247,10 @@ export function Header() {
                       </div>
                       <div>
                         <div className="font-medium text-gray-900">
-                          Đồ ăn vặt ngon
+                          {t.snackMenuTitle}
                         </div>
                         <div className="text-sm text-gray-500">
-                          Bánh quy, kẹo, hạt rang
+                          {t.snackMenuDesc}
                         </div>
                       </div>
                     </div>
@@ -260,10 +268,10 @@ export function Header() {
                     </div>
                     <div>
                       <div className="font-medium text-gray-900">
-                        Vòng quay may mắn
+                        {t.luckyWheelTitle}
                       </div>
                       <div className="text-sm text-gray-500">
-                        Nhận ưu đãi đặc biệt
+                        {t.luckyWheelDesc}
                       </div>
                     </div>
                   </div>
@@ -272,7 +280,7 @@ export function Header() {
                     <div className="px-4 py-2 text-center">
                       <Badge className="bg-gradient-to-r from-red-500 to-pink-500 text-white animate-pulse">
                         <Zap className="w-3 h-3 mr-1" />
-                        Flash Sale đang diễn ra!
+                        {t.flashSaleActive}
                       </Badge>
                     </div>
                   </div>

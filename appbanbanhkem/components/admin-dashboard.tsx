@@ -1,17 +1,30 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { auth, db } from "@/lib/firebase"
-import { signOut } from "firebase/auth"
-import { collection, getDocs, deleteDoc, doc, query, orderBy } from "firebase/firestore"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { AddProductModal } from "@/components/add-product-modal"
-import { ProductCard } from "@/components/product-card"
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { auth, db } from "@/lib/firebase";
+import { signOut } from "firebase/auth";
+import {
+  collection,
+  getDocs,
+  deleteDoc,
+  doc,
+  query,
+  orderBy,
+} from "firebase/firestore";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { AddProductModal } from "@/components/add-product-modal";
+import { ProductCard } from "@/components/product-card";
 import {
   BarChart3,
   ShoppingCart,
@@ -33,221 +46,232 @@ import {
   Building,
   User,
   Phone,
-} from "lucide-react"
+} from "lucide-react";
 
 interface Product {
-  id: string
-  name: string
-  description: string
-  price: number
-  originalPrice?: number
-  rating: number
-  orders: number
-  imageUrl: string
-  category: string
-  size: string
-  flavor: string
-  isCustomizable: boolean
-  isTrending?: boolean
-  isBestSeller?: boolean
-  stock: number
-  status: string
-  createdAt: any
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  originalPrice?: number;
+  rating: number;
+  orders: number;
+  imageUrl: string;
+  category: string;
+  size: string;
+  flavor: string;
+  isCustomizable: boolean;
+  isTrending?: boolean;
+  isBestSeller?: boolean;
+  stock: number;
+  status: string;
+  createdAt: any;
 }
 
 interface Customer {
-  uid: string
-  email: string | null
-  displayName: string | null
-  phoneNumber: string | null
-  emailVerified: boolean
-  createdAt: string
-  lastLogin: string
-  addressCount: number
+  uid: string;
+  email: string | null;
+  displayName: string | null;
+  phoneNumber: string | null;
+  emailVerified: boolean;
+  createdAt: string;
+  lastLogin: string;
+  addressCount: number;
 }
 
 interface Address {
-  id: string
-  name: string
-  phone: string
-  address: string
-  ward: string
-  district: string
-  city: string
-  type: "home" | "office" | "other"
-  isDefault: boolean
+  id: string;
+  name: string;
+  phone: string;
+  address: string;
+  ward: string;
+  district: string;
+  city: string;
+  type: "home" | "office" | "other";
+  isDefault: boolean;
 }
 
 export function AdminDashboard() {
-  const [activeTab, setActiveTab] = useState("dashboard")
-  const [showFilterModal, setShowFilterModal] = useState(false)
-  const [showAddProductModal, setShowAddProductModal] = useState(false)
-  const [products, setProducts] = useState<Product[]>([])
-  const [filteredProducts, setFilteredProducts] = useState<Product[]>([])
-  const [customers, setCustomers] = useState<Customer[]>([])
-  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null)
-  const [customerAddresses, setCustomerAddresses] = useState<Address[]>([])
-  const [showAddressModal, setShowAddressModal] = useState(false)
-  const [loading, setLoading] = useState(true)
-  const [mounted, setMounted] = useState(false)
-  const [searchQuery, setSearchQuery] = useState("")
-  const [categoryFilter, setCategoryFilter] = useState("all")
-  const router = useRouter()
+  const [activeTab, setActiveTab] = useState("dashboard");
+  const [showFilterModal, setShowFilterModal] = useState(false);
+  const [showAddProductModal, setShowAddProductModal] = useState(false);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
+    null
+  );
+  const [customerAddresses, setCustomerAddresses] = useState<Address[]>([]);
+  const [showAddressModal, setShowAddressModal] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [mounted, setMounted] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("all");
+  const router = useRouter();
 
   // Load products from Firestore
   const loadProducts = async () => {
     // Check if we're on client-side and db is available
     if (typeof window === "undefined" || !db) {
-      setLoading(false)
-      return
+      setLoading(false);
+      return;
     }
 
-    setLoading(true)
-    
+    setLoading(true);
+
     try {
       // Simple query without orderBy to avoid index requirement
-      const q = query(collection(db, "products"))
-      const querySnapshot = await getDocs(q)
-      
+      const q = query(collection(db, "products"));
+      const querySnapshot = await getDocs(q);
+
       const productsData = querySnapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
-      })) as Product[]
-      
+      })) as Product[];
+
       // Sort in memory by createdAt
       productsData.sort((a, b) => {
-        const timeA = a.createdAt?.toMillis?.() || 0
-        const timeB = b.createdAt?.toMillis?.() || 0
-        return timeB - timeA
-      })
-      
-      setProducts(productsData)
-      setFilteredProducts(productsData)
+        const timeA = a.createdAt?.toMillis?.() || 0;
+        const timeB = b.createdAt?.toMillis?.() || 0;
+        return timeB - timeA;
+      });
+
+      setProducts(productsData);
+      setFilteredProducts(productsData);
     } catch (error) {
-      console.error("Error loading products:", error)
+      console.error("Error loading products:", error);
       // Set empty array on error to show empty state
-      setProducts([])
-      setFilteredProducts([])
+      setProducts([]);
+      setFilteredProducts([]);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   // Load customers data
   const loadCustomers = async () => {
-    if (typeof window === "undefined") return
+    if (typeof window === "undefined") return;
 
     try {
       // Get all users who have registered
       // We'll get this from localStorage addresses
-      const customersList: Customer[] = []
-      
+      const customersList: Customer[] = [];
+
       // Get all localStorage keys
       for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i)
-        if (key?.startsWith('addresses_')) {
-          const uid = key.replace('addresses_', '')
-          const addresses = JSON.parse(localStorage.getItem(key) || '[]')
-          
+        const key = localStorage.key(i);
+        if (key?.startsWith("addresses_")) {
+          const uid = key.replace("addresses_", "");
+          const addresses = JSON.parse(localStorage.getItem(key) || "[]");
+
           // Try to get user info from auth or create placeholder
           customersList.push({
             uid: uid,
-            email: uid.includes('@') ? uid : `user_${uid.slice(0, 8)}@example.com`,
-            displayName: addresses[0]?.name || 'Khách hàng',
+            email: uid.includes("@")
+              ? uid
+              : `user_${uid.slice(0, 8)}@example.com`,
+            displayName: addresses[0]?.name || "Khách hàng",
             phoneNumber: addresses[0]?.phone || null,
             emailVerified: false,
             createdAt: new Date().toISOString(),
             lastLogin: new Date().toISOString(),
-            addressCount: addresses.length
-          })
+            addressCount: addresses.length,
+          });
         }
       }
 
       // Add current logged in users info
-      if (auth.currentUser && !customersList.find(c => c.uid === auth.currentUser?.uid)) {
-        const user = auth.currentUser
-        const addresses = JSON.parse(localStorage.getItem(`addresses_${user.uid}`) || '[]')
+      if (
+        auth.currentUser &&
+        !customersList.find((c) => c.uid === auth.currentUser?.uid)
+      ) {
+        const user = auth.currentUser;
+        const addresses = JSON.parse(
+          localStorage.getItem(`addresses_${user.uid}`) || "[]"
+        );
         customersList.push({
           uid: user.uid,
           email: user.email,
-          displayName: user.displayName || 'Người dùng',
+          displayName: user.displayName || "Người dùng",
           phoneNumber: user.phoneNumber,
           emailVerified: user.emailVerified,
           createdAt: user.metadata.creationTime || new Date().toISOString(),
           lastLogin: user.metadata.lastSignInTime || new Date().toISOString(),
-          addressCount: addresses.length
-        })
+          addressCount: addresses.length,
+        });
       }
 
-      setCustomers(customersList)
+      setCustomers(customersList);
     } catch (error) {
-      console.error("Error loading customers:", error)
-      setCustomers([])
+      console.error("Error loading customers:", error);
+      setCustomers([]);
     }
-  }
+  };
 
   // View customer addresses
   const viewCustomerAddresses = (customer: Customer) => {
-    const addresses = JSON.parse(localStorage.getItem(`addresses_${customer.uid}`) || '[]')
-    setCustomerAddresses(addresses)
-    setSelectedCustomer(customer)
-    setShowAddressModal(true)
-  }
+    const addresses = JSON.parse(
+      localStorage.getItem(`addresses_${customer.uid}`) || "[]"
+    );
+    setCustomerAddresses(addresses);
+    setSelectedCustomer(customer);
+    setShowAddressModal(true);
+  };
 
   const getTypeLabel = (type: string) => {
     switch (type) {
       case "home":
-        return "Nhà riêng"
+        return "Nhà riêng";
       case "office":
-        return "Văn phòng"
+        return "Văn phòng";
       default:
-        return "Khác"
+        return "Khác";
     }
-  }
+  };
 
   // Mount check
   useEffect(() => {
-    setMounted(true)
-    loadCustomers()
-  }, [])
+    setMounted(true);
+    loadCustomers();
+  }, []);
 
   // Load products only after component is mounted
   useEffect(() => {
     if (mounted) {
-      loadProducts()
+      loadProducts();
     }
-  }, [mounted])
+  }, [mounted]);
 
   // Filter products
   useEffect(() => {
-    let filtered = products
+    let filtered = products;
 
     if (searchQuery) {
       filtered = filtered.filter((p) =>
         p.name.toLowerCase().includes(searchQuery.toLowerCase())
-      )
+      );
     }
 
     if (categoryFilter !== "all") {
-      filtered = filtered.filter((p) => p.category === categoryFilter)
+      filtered = filtered.filter((p) => p.category === categoryFilter);
     }
 
-    setFilteredProducts(filtered)
-  }, [searchQuery, categoryFilter, products])
+    setFilteredProducts(filtered);
+  }, [searchQuery, categoryFilter, products]);
 
   // Delete product
   const handleDeleteProduct = async (productId: string) => {
-    if (!confirm("Bạn có chắc chắn muốn xóa sản phẩm này?")) return
+    if (!confirm("Bạn có chắc chắn muốn xóa sản phẩm này?")) return;
 
     try {
-      await deleteDoc(doc(db, "products", productId))
-      loadProducts()
-      alert("Xóa sản phẩm thành công!")
+      await deleteDoc(doc(db, "products", productId));
+      loadProducts();
+      alert("Xóa sản phẩm thành công!");
     } catch (error) {
-      console.error("Error deleting product:", error)
-      alert("Có lỗi xảy ra khi xóa sản phẩm!")
+      console.error("Error deleting product:", error);
+      alert("Có lỗi xảy ra khi xóa sản phẩm!");
     }
-  }
+  };
 
   // Mock data
   const stats = {
@@ -255,45 +279,49 @@ export function AdminDashboard() {
     totalRevenue: 0,
     totalCustomers: 0,
     totalProducts: products.length,
-  }
+  };
 
   // Start with zero/empty data – ready for real integrations
   const recentOrders: Array<{
-    id: string
-    customer: string
-    product: string
-    amount: number
-    status: string
-    date: string
-  }> = []
+    id: string;
+    customer: string;
+    product: string;
+    amount: number;
+    status: string;
+    date: string;
+  }> = [];
 
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "pending":
-        return <Badge className="bg-yellow-100 text-yellow-800">Chờ xử lý</Badge>
+        return (
+          <Badge className="bg-yellow-100 text-yellow-800">Chờ xử lý</Badge>
+        );
       case "processing":
-        return <Badge className="bg-blue-100 text-blue-800">Đang làm</Badge>
+        return <Badge className="bg-blue-100 text-blue-800">Đang làm</Badge>;
       case "completed":
-        return <Badge className="bg-green-100 text-green-800">Hoàn thành</Badge>
+        return (
+          <Badge className="bg-green-100 text-green-800">Hoàn thành</Badge>
+        );
       case "cancelled":
-        return <Badge className="bg-red-100 text-red-800">Đã hủy</Badge>
+        return <Badge className="bg-red-100 text-red-800">Đã hủy</Badge>;
       default:
-        return <Badge>{status}</Badge>
+        return <Badge>{status}</Badge>;
     }
-  }
+  };
 
   const getProductStatusBadge = (status: string) => {
     switch (status) {
       case "active":
-        return <Badge className="bg-green-100 text-green-800">Đang bán</Badge>
+        return <Badge className="bg-green-100 text-green-800">Đang bán</Badge>;
       case "out_of_stock":
-        return <Badge className="bg-red-100 text-red-800">Hết hàng</Badge>
+        return <Badge className="bg-red-100 text-red-800">Hết hàng</Badge>;
       case "inactive":
-        return <Badge className="bg-gray-100 text-gray-800">Ngừng bán</Badge>
+        return <Badge className="bg-gray-100 text-gray-800">Ngừng bán</Badge>;
       default:
-        return <Badge>{status}</Badge>
+        return <Badge>{status}</Badge>;
     }
-  }
+  };
 
   return (
     <div className="flex h-screen bg-gray-100">
@@ -399,9 +427,9 @@ export function AdminDashboard() {
             className="w-full justify-start text-red-600"
             onClick={async () => {
               try {
-                await signOut(auth)
+                await signOut(auth);
               } finally {
-                router.replace("/auth")
+                router.replace("/auth");
               }
             }}
           >
@@ -447,7 +475,9 @@ export function AdminDashboard() {
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-sm text-gray-600">Tổng đơn hàng</p>
-                        <p className="text-2xl font-bold">{stats.totalOrders.toLocaleString()}</p>
+                        <p className="text-2xl font-bold">
+                          {stats.totalOrders.toLocaleString()}
+                        </p>
                       </div>
                       <ShoppingCart className="w-8 h-8 text-blue-500" />
                     </div>
@@ -463,7 +493,9 @@ export function AdminDashboard() {
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-sm text-gray-600">Doanh thu</p>
-                        <p className="text-2xl font-bold">{stats.totalRevenue.toLocaleString()}đ</p>
+                        <p className="text-2xl font-bold">
+                          {stats.totalRevenue.toLocaleString()}đ
+                        </p>
                       </div>
                       <BarChart3 className="w-8 h-8 text-green-500" />
                     </div>
@@ -479,7 +511,9 @@ export function AdminDashboard() {
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-sm text-gray-600">Khách hàng</p>
-                        <p className="text-2xl font-bold">{stats.totalCustomers.toLocaleString()}</p>
+                        <p className="text-2xl font-bold">
+                          {stats.totalCustomers.toLocaleString()}
+                        </p>
                       </div>
                       <Users className="w-8 h-8 text-purple-500" />
                     </div>
@@ -495,7 +529,9 @@ export function AdminDashboard() {
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-sm text-gray-600">Sản phẩm</p>
-                        <p className="text-2xl font-bold">{stats.totalProducts}</p>
+                        <p className="text-2xl font-bold">
+                          {stats.totalProducts}
+                        </p>
                       </div>
                       <Package className="w-8 h-8 text-orange-500" />
                     </div>
@@ -514,23 +550,34 @@ export function AdminDashboard() {
                 </CardHeader>
                 <CardContent>
                   {recentOrders.length === 0 ? (
-                    <div className="text-center text-gray-500 py-8">Chưa có đơn hàng</div>
+                    <div className="text-center text-gray-500 py-8">
+                      Chưa có đơn hàng
+                    </div>
                   ) : (
                     <div className="space-y-4">
                       {recentOrders.map((order) => (
-                        <div key={order.id} className="flex items-center justify-between p-4 border rounded-lg">
+                        <div
+                          key={order.id}
+                          className="flex items-center justify-between p-4 border rounded-lg"
+                        >
                           <div className="flex items-center space-x-4">
                             <div>
                               <p className="font-medium">{order.id}</p>
-                              <p className="text-sm text-gray-600">{order.customer}</p>
+                              <p className="text-sm text-gray-600">
+                                {order.customer}
+                              </p>
                             </div>
                             <div>
                               <p className="text-sm">{order.product}</p>
-                              <p className="text-sm text-gray-600">{order.date}</p>
+                              <p className="text-sm text-gray-600">
+                                {order.date}
+                              </p>
                             </div>
                           </div>
                           <div className="flex items-center space-x-4">
-                            <span className="font-medium">{order.amount.toLocaleString()}đ</span>
+                            <span className="font-medium">
+                              {order.amount.toLocaleString()}đ
+                            </span>
                             {getStatusBadge(order.status)}
                           </div>
                         </div>
@@ -551,7 +598,9 @@ export function AdminDashboard() {
                 </CardHeader>
                 <CardContent>
                   <div className="bg-white rounded-lg border p-6">
-                    <p className="text-gray-700 font-medium mb-2">Ghi nhận ý kiến khách hàng</p>
+                    <p className="text-gray-700 font-medium mb-2">
+                      Ghi nhận ý kiến khách hàng
+                    </p>
                     <div className="text-gray-500">Chưa có phản hồi</div>
                   </div>
                 </CardContent>
@@ -565,14 +614,17 @@ export function AdminDashboard() {
               <Card className="overflow-hidden">
                 <div className="bg-gradient-to-r from-pink-500 to-rose-400 text-white px-6 py-4 flex items-center justify-between">
                   <div className="font-semibold">Chat với khách hàng</div>
-                  <div className="text-sm">Đang hoạt động •
+                  <div className="text-sm">
+                    Đang hoạt động •
                     <span className="ml-1 inline-block w-2 h-2 bg-green-400 rounded-full align-middle"></span>
                   </div>
                 </div>
                 <CardContent className="p-0">
                   <div className="grid grid-cols-12 h-[60vh]">
                     <div className="col-span-3 border-r p-4">
-                      <div className="text-sm text-gray-700 font-medium mb-3">Cuộc trò chuyện</div>
+                      <div className="text-sm text-gray-700 font-medium mb-3">
+                        Cuộc trò chuyện
+                      </div>
                       <div className="h-full flex items-center justify-center text-gray-500">
                         Chưa có cuộc trò chuyện
                       </div>
@@ -599,7 +651,9 @@ export function AdminDashboard() {
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm text-gray-600">Doanh thu tháng này</p>
+                        <p className="text-sm text-gray-600">
+                          Doanh thu tháng này
+                        </p>
                         <p className="text-2xl font-bold">0</p>
                       </div>
                       <span className="text-green-500">$</span>
@@ -610,7 +664,9 @@ export function AdminDashboard() {
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm text-gray-600">Đơn hàng tháng này</p>
+                        <p className="text-sm text-gray-600">
+                          Đơn hàng tháng này
+                        </p>
                         <p className="text-2xl font-bold">0</p>
                       </div>
                       <ShoppingCart className="w-6 h-6 text-blue-500" />
@@ -697,12 +753,18 @@ export function AdminDashboard() {
                       <div className="border rounded p-4 text-center">
                         <div className="text-gray-600">Khách hàng mới</div>
                         <div className="text-2xl font-bold">0</div>
-                        <div className="text-xs text-gray-500">0đ Chi tiêu trung bình</div>
+                        <div className="text-xs text-gray-500">
+                          0đ Chi tiêu trung bình
+                        </div>
                       </div>
                       <div className="border rounded p-4 text-center">
-                        <div className="text-gray-600">Khách hàng thường xuyên</div>
+                        <div className="text-gray-600">
+                          Khách hàng thường xuyên
+                        </div>
                         <div className="text-2xl font-bold">0</div>
-                        <div className="text-xs text-gray-500">0đ Chi tiêu trung bình</div>
+                        <div className="text-xs text-gray-500">
+                          0đ Chi tiêu trung bình
+                        </div>
                       </div>
                     </div>
                   </CardContent>
@@ -752,37 +814,58 @@ export function AdminDashboard() {
                     <table className="w-full">
                       <thead className="bg-gray-50">
                         <tr>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Mã đơn</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                            Mã đơn
+                          </th>
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                             Khách hàng
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Sản phẩm</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Số tiền</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                            Sản phẩm
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                            Số tiền
+                          </th>
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                             Trạng thái
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ngày</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Thao tác</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                            Ngày
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                            Thao tác
+                          </th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-200">
                         {recentOrders.length === 0 ? (
                           <tr>
-                            <td className="px-6 py-8 text-center text-gray-500" colSpan={7}>
+                            <td
+                              className="px-6 py-8 text-center text-gray-500"
+                              colSpan={7}
+                            >
                               Không có đơn hàng
                             </td>
                           </tr>
                         ) : (
                           recentOrders.map((order) => (
                             <tr key={order.id}>
-                              <td className="px-6 py-4 whitespace-nowrap font-medium">{order.id}</td>
-                              <td className="px-6 py-4 whitespace-nowrap">{order.customer}</td>
+                              <td className="px-6 py-4 whitespace-nowrap font-medium">
+                                {order.id}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                {order.customer}
+                              </td>
                               <td className="px-6 py-4">{order.product}</td>
                               <td className="px-6 py-4 whitespace-nowrap font-medium">
                                 {order.amount.toLocaleString()}đ
                               </td>
-                              <td className="px-6 py-4 whitespace-nowrap">{getStatusBadge(order.status)}</td>
-                              <td className="px-6 py-4 whitespace-nowrap">{order.date}</td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                {getStatusBadge(order.status)}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                {order.date}
+                              </td>
                               <td className="px-6 py-4 whitespace-nowrap">
                                 <div className="flex space-x-2">
                                   <Button size="sm" variant="outline">
@@ -816,7 +899,10 @@ export function AdminDashboard() {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                   />
-                  <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                  <Select
+                    value={categoryFilter}
+                    onValueChange={setCategoryFilter}
+                  >
                     <SelectTrigger className="w-[200px]">
                       <SelectValue placeholder="Danh mục" />
                     </SelectTrigger>
@@ -855,7 +941,9 @@ export function AdminDashboard() {
                   <CardContent className="p-10 text-center">
                     <Package className="w-16 h-16 mx-auto mb-4 text-gray-300" />
                     <h3 className="text-lg font-semibold text-gray-800 mb-2">
-                      {searchQuery || categoryFilter !== "all" ? "Không tìm thấy sản phẩm" : "Chưa có sản phẩm"}
+                      {searchQuery || categoryFilter !== "all"
+                        ? "Không tìm thấy sản phẩm"
+                        : "Chưa có sản phẩm"}
                     </h3>
                     <p className="text-gray-500 mb-4">
                       {searchQuery || categoryFilter !== "all"
@@ -877,7 +965,8 @@ export function AdminDashboard() {
                 <>
                   <div className="flex items-center justify-between mb-4">
                     <p className="text-sm text-gray-600">
-                      Hiển thị {filteredProducts.length} / {products.length} sản phẩm
+                      Hiển thị {filteredProducts.length} / {products.length} sản
+                      phẩm
                     </p>
                   </div>
                   <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -891,10 +980,14 @@ export function AdminDashboard() {
                           />
                           <div className="absolute top-3 left-3 flex flex-col gap-2">
                             {product.isTrending && (
-                              <Badge className="bg-red-500 text-white">🔥 Hot</Badge>
+                              <Badge className="bg-red-500 text-white">
+                                🔥 Hot
+                              </Badge>
                             )}
                             {product.isBestSeller && (
-                              <Badge className="bg-yellow-500 text-white">Bán chạy</Badge>
+                              <Badge className="bg-yellow-500 text-white">
+                                Bán chạy
+                              </Badge>
                             )}
                           </div>
                           {getProductStatusBadge(product.status)}
@@ -902,12 +995,20 @@ export function AdminDashboard() {
                         <CardContent className="p-4">
                           <div className="space-y-3">
                             <div>
-                              <h3 className="font-semibold text-lg line-clamp-1">{product.name}</h3>
-                              <p className="text-sm text-gray-600 line-clamp-2">{product.description}</p>
+                              <h3 className="font-semibold text-lg line-clamp-1">
+                                {product.name}
+                              </h3>
+                              <p className="text-sm text-gray-600 line-clamp-2">
+                                {product.description}
+                              </p>
                             </div>
                             <div className="flex items-center justify-between text-sm">
-                              <span className="text-gray-600">{product.category}</span>
-                              <span className="text-gray-600">Tồn: {product.stock}</span>
+                              <span className="text-gray-600">
+                                {product.category}
+                              </span>
+                              <span className="text-gray-600">
+                                Tồn: {product.stock}
+                              </span>
                             </div>
                             <div className="flex items-center justify-between">
                               <div>
@@ -926,7 +1027,9 @@ export function AdminDashboard() {
                                 size="sm"
                                 variant="outline"
                                 className="flex-1"
-                                onClick={() => router.push(`/san-pham/${product.id}`)}
+                                onClick={() =>
+                                  router.push(`/san-pham/${product.id}`)
+                                }
                               >
                                 <Eye className="w-4 h-4 mr-2" />
                                 Xem chi tiết
@@ -955,32 +1058,50 @@ export function AdminDashboard() {
             <div className="space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>Danh sách khách hàng ({customers.length})</CardTitle>
+                  <CardTitle>
+                    Danh sách khách hàng ({customers.length})
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
                   {customers.length === 0 ? (
                     <div className="text-center py-12">
                       <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                      <p className="text-gray-600">Chưa có khách hàng nào đăng ký</p>
+                      <p className="text-gray-600">
+                        Chưa có khách hàng nào đăng ký
+                      </p>
                     </div>
                   ) : (
                     <div className="overflow-x-auto">
                       <table className="w-full">
                         <thead>
                           <tr className="border-b">
-                            <th className="text-left py-3 px-4 font-medium text-gray-700">Họ tên</th>
-                            <th className="text-left py-3 px-4 font-medium text-gray-700">Email</th>
-                            <th className="text-left py-3 px-4 font-medium text-gray-700">Số điện thoại</th>
-                            <th className="text-left py-3 px-4 font-medium text-gray-700">Địa chỉ</th>
-                            <th className="text-left py-3 px-4 font-medium text-gray-700">Xác thực</th>
-                            <th className="text-left py-3 px-4 font-medium text-gray-700">Ngày tạo</th>
-                            <th className="text-left py-3 px-4 font-medium text-gray-700">Đăng nhập gần nhất</th>
+                            <th className="text-left py-3 px-4 font-medium text-gray-700">
+                              Họ tên
+                            </th>
+                            <th className="text-left py-3 px-4 font-medium text-gray-700">
+                              Email
+                            </th>
+                            <th className="text-left py-3 px-4 font-medium text-gray-700">
+                              Số điện thoại
+                            </th>
+                            <th className="text-left py-3 px-4 font-medium text-gray-700">
+                              Địa chỉ
+                            </th>
+                            <th className="text-left py-3 px-4 font-medium text-gray-700">
+                              Xác thực
+                            </th>
+                            <th className="text-left py-3 px-4 font-medium text-gray-700">
+                              Ngày tạo
+                            </th>
+                            <th className="text-left py-3 px-4 font-medium text-gray-700">
+                              Đăng nhập gần nhất
+                            </th>
                           </tr>
                         </thead>
                         <tbody>
                           {customers.map((customer) => (
-                            <tr 
-                              key={customer.uid} 
+                            <tr
+                              key={customer.uid}
                               className="border-b hover:bg-gray-50 cursor-pointer transition-colors"
                               onClick={() => viewCustomerAddresses(customer)}
                             >
@@ -988,25 +1109,36 @@ export function AdminDashboard() {
                                 <div className="flex items-center space-x-3">
                                   <div className="w-10 h-10 bg-gradient-to-r from-pink-500 to-purple-500 rounded-full flex items-center justify-center">
                                     <span className="text-white font-medium">
-                                      {customer.displayName?.charAt(0).toUpperCase() || 'U'}
+                                      {customer.displayName
+                                        ?.charAt(0)
+                                        .toUpperCase() || "U"}
                                     </span>
                                   </div>
                                   <div>
                                     <div className="font-medium text-gray-900">
-                                      {customer.displayName || 'Chưa cập nhật'}
+                                      {customer.displayName || "Chưa cập nhật"}
                                     </div>
-                                    <div className="text-xs text-gray-500">ID: {customer.uid.slice(0, 8)}...</div>
+                                    <div className="text-xs text-gray-500">
+                                      ID: {customer.uid.slice(0, 8)}...
+                                    </div>
                                   </div>
                                 </div>
                               </td>
                               <td className="py-3 px-4">
-                                <div className="text-sm text-gray-900">{customer.email || 'Chưa có'}</div>
+                                <div className="text-sm text-gray-900">
+                                  {customer.email || "Chưa có"}
+                                </div>
                               </td>
                               <td className="py-3 px-4">
-                                <div className="text-sm text-gray-900">{customer.phoneNumber || 'Chưa có'}</div>
+                                <div className="text-sm text-gray-900">
+                                  {customer.phoneNumber || "Chưa có"}
+                                </div>
                               </td>
                               <td className="py-3 px-4">
-                                <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100">
+                                <Badge
+                                  variant="outline"
+                                  className="bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100"
+                                >
                                   {customer.addressCount} địa chỉ
                                 </Badge>
                               </td>
@@ -1016,25 +1148,42 @@ export function AdminDashboard() {
                                     ✓ Đã xác thực
                                   </Badge>
                                 ) : (
-                                  <Badge variant="outline" className="bg-gray-100 text-gray-600">
+                                  <Badge
+                                    variant="outline"
+                                    className="bg-gray-100 text-gray-600"
+                                  >
                                     Chưa xác thực
                                   </Badge>
                                 )}
                               </td>
                               <td className="py-3 px-4">
                                 <div className="text-sm text-gray-600">
-                                  {new Date(customer.createdAt).toLocaleDateString('vi-VN')}
+                                  {new Date(
+                                    customer.createdAt
+                                  ).toLocaleDateString("vi-VN")}
                                 </div>
                                 <div className="text-xs text-gray-400">
-                                  {new Date(customer.createdAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
+                                  {new Date(
+                                    customer.createdAt
+                                  ).toLocaleTimeString("vi-VN", {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  })}
                                 </div>
                               </td>
                               <td className="py-3 px-4">
                                 <div className="text-sm text-gray-600">
-                                  {new Date(customer.lastLogin).toLocaleDateString('vi-VN')}
+                                  {new Date(
+                                    customer.lastLogin
+                                  ).toLocaleDateString("vi-VN")}
                                 </div>
                                 <div className="text-xs text-gray-400">
-                                  {new Date(customer.lastLogin).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
+                                  {new Date(
+                                    customer.lastLogin
+                                  ).toLocaleTimeString("vi-VN", {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  })}
                                 </div>
                               </td>
                             </tr>
@@ -1064,9 +1213,11 @@ export function AdminDashboard() {
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm text-gray-600">Đã xác thực email</p>
+                        <p className="text-sm text-gray-600">
+                          Đã xác thực email
+                        </p>
                         <p className="text-2xl font-bold">
-                          {customers.filter(c => c.emailVerified).length}
+                          {customers.filter((c) => c.emailVerified).length}
                         </p>
                       </div>
                       <Badge className="bg-green-500 text-white">✓</Badge>
@@ -1078,9 +1229,11 @@ export function AdminDashboard() {
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm text-gray-600">Có địa chỉ giao hàng</p>
+                        <p className="text-sm text-gray-600">
+                          Có địa chỉ giao hàng
+                        </p>
                         <p className="text-2xl font-bold">
-                          {customers.filter(c => c.addressCount > 0).length}
+                          {customers.filter((c) => c.addressCount > 0).length}
                         </p>
                       </div>
                       <MapPin className="w-8 h-8 text-blue-500" />
@@ -1098,8 +1251,8 @@ export function AdminDashboard() {
         isOpen={showAddProductModal}
         onClose={() => setShowAddProductModal(false)}
         onSuccess={() => {
-          loadProducts()
-          alert("Thêm sản phẩm thành công!")
+          loadProducts();
+          alert("Thêm sản phẩm thành công!");
         }}
       />
 
@@ -1109,7 +1262,12 @@ export function AdminDashboard() {
           <div className="bg-white rounded-lg shadow-lg w-full max-w-md">
             <div className="flex items-center justify-between border-b px-4 py-3">
               <div className="font-semibold">Lọc dữ liệu / Xóa bản ghi</div>
-              <button onClick={() => setShowFilterModal(false)} className="text-gray-500">✕</button>
+              <button
+                onClick={() => setShowFilterModal(false)}
+                className="text-gray-500"
+              >
+                ✕
+              </button>
             </div>
             <div className="p-4 space-y-4">
               <div>
@@ -1138,7 +1296,11 @@ export function AdminDashboard() {
               </div>
             </div>
             <div className="flex justify-end gap-2 border-t px-4 py-3">
-              <Button variant="outline" className="bg-transparent" onClick={() => setShowFilterModal(false)}>
+              <Button
+                variant="outline"
+                className="bg-transparent"
+                onClick={() => setShowFilterModal(false)}
+              >
                 Hủy
               </Button>
               <Button className="bg-red-500 hover:bg-red-600">Xóa</Button>
@@ -1157,11 +1319,14 @@ export function AdminDashboard() {
                 <div className="flex items-center space-x-4">
                   <div className="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
                     <span className="text-2xl font-bold">
-                      {selectedCustomer.displayName?.charAt(0).toUpperCase() || 'U'}
+                      {selectedCustomer.displayName?.charAt(0).toUpperCase() ||
+                        "U"}
                     </span>
                   </div>
                   <div>
-                    <h2 className="text-2xl font-bold">{selectedCustomer.displayName}</h2>
+                    <h2 className="text-2xl font-bold">
+                      {selectedCustomer.displayName}
+                    </h2>
                     <p className="text-pink-100">{selectedCustomer.email}</p>
                   </div>
                 </div>
@@ -1184,19 +1349,32 @@ export function AdminDashboard() {
               {customerAddresses.length === 0 ? (
                 <div className="text-center py-12">
                   <MapPin className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                  <p className="text-gray-500">Khách hàng chưa có địa chỉ giao hàng</p>
+                  <p className="text-gray-500">
+                    Khách hàng chưa có địa chỉ giao hàng
+                  </p>
                 </div>
               ) : (
                 <div className="space-y-4">
                   {customerAddresses.map((address) => (
-                    <Card key={address.id} className="hover:shadow-md transition-shadow">
+                    <Card
+                      key={address.id}
+                      className="hover:shadow-md transition-shadow"
+                    >
                       <CardContent className="p-5">
                         <div className="flex items-start justify-between mb-3">
                           <div className="flex items-center space-x-2">
-                            {address.type === "home" && <Home className="w-5 h-5 text-blue-500" />}
-                            {address.type === "office" && <Building className="w-5 h-5 text-purple-500" />}
-                            {address.type === "other" && <User className="w-5 h-5 text-gray-500" />}
-                            <span className="font-medium text-gray-900">{getTypeLabel(address.type)}</span>
+                            {address.type === "home" && (
+                              <Home className="w-5 h-5 text-blue-500" />
+                            )}
+                            {address.type === "office" && (
+                              <Building className="w-5 h-5 text-purple-500" />
+                            )}
+                            {address.type === "other" && (
+                              <User className="w-5 h-5 text-gray-500" />
+                            )}
+                            <span className="font-medium text-gray-900">
+                              {getTypeLabel(address.type)}
+                            </span>
                             {address.isDefault && (
                               <Badge className="bg-green-100 text-green-800 border-green-200">
                                 Mặc định
@@ -1207,18 +1385,23 @@ export function AdminDashboard() {
                         <div className="space-y-2">
                           <div className="flex items-center space-x-2">
                             <User className="w-4 h-4 text-gray-400" />
-                            <span className="font-medium text-gray-900">{address.name}</span>
+                            <span className="font-medium text-gray-900">
+                              {address.name}
+                            </span>
                           </div>
                           <div className="flex items-center space-x-2">
                             <Phone className="w-4 h-4 text-gray-400" />
-                            <span className="text-gray-700">{address.phone}</span>
+                            <span className="text-gray-700">
+                              {address.phone}
+                            </span>
                           </div>
                           <div className="flex items-start space-x-2">
                             <MapPin className="w-4 h-4 text-gray-400 mt-1" />
                             <div className="text-gray-700">
                               <div>{address.address}</div>
                               <div className="text-sm text-gray-500">
-                                {address.ward}, {address.district}, {address.city}
+                                {address.ward}, {address.district},{" "}
+                                {address.city}
                               </div>
                             </div>
                           </div>
@@ -1244,5 +1427,5 @@ export function AdminDashboard() {
         </div>
       )}
     </div>
-  )
+  );
 }

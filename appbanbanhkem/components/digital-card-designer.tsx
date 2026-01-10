@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslation } from "@/lib/translations";
 
 interface CardTemplate {
   id: string;
@@ -13,6 +14,7 @@ interface CardTemplate {
 }
 
 export function DigitalCardDesigner() {
+  const { t } = useTranslation();
   const [selectedTemplate, setSelectedTemplate] =
     useState<string>("birthday-1");
   const [cardData, setCardData] = useState({
@@ -179,25 +181,23 @@ export function DigitalCardDesigner() {
       <div className="container mx-auto px-4">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-800 mb-2">
-            🎨 Thiết kế thiệp điện tử
+            🎨 {t.digitalCardBadge}
           </h1>
-          <p className="text-gray-600">
-            Tạo thiệp đẹp và ý nghĩa cho những dịp đặc biệt
-          </p>
+          <p className="text-gray-600">{t.digitalCardDesc2}</p>
         </div>
 
         <div className="grid lg:grid-cols-2 gap-8">
           {/* Design Panel */}
           <div className="bg-white rounded-xl shadow-lg p-6">
             <h2 className="text-2xl font-bold text-gray-800 mb-6">
-              Tùy chỉnh thiệp
+              {t.customizeCard}
             </h2>
 
             <div className="space-y-6">
               {/* Template Selection */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-3">
-                  Chọn mẫu thiệp
+                  {t.chooseTemplate}
                 </label>
                 <div className="grid grid-cols-2 gap-3">
                   {filteredTemplates.map((template) => (
@@ -222,7 +222,7 @@ export function DigitalCardDesigner() {
               {/* Occasion Selection */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-3">
-                  Dịp lễ
+                  {t.occasionType}
                 </label>
                 <select
                   value={cardData.occasion}
@@ -243,7 +243,7 @@ export function DigitalCardDesigner() {
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Tên người nhận
+                    {t.recipientName}
                   </label>
                   <input
                     type="text"
@@ -254,21 +254,21 @@ export function DigitalCardDesigner() {
                         recipientName: e.target.value,
                       })
                     }
-                    placeholder="Nhập tên người nhận..."
+                    placeholder={t.recipientPlaceholder}
                     className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Lời nhắn
+                    {t.messageText}
                   </label>
                   <textarea
                     value={cardData.message}
                     onChange={(e) =>
                       setCardData({ ...cardData, message: e.target.value })
                     }
-                    placeholder="Viết lời nhắn của bạn..."
+                    placeholder={t.messagePlaceholder}
                     rows={4}
                     className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   />
@@ -276,7 +276,7 @@ export function DigitalCardDesigner() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Tên người gửi
+                    {t.senderName}
                   </label>
                   <input
                     type="text"
@@ -284,7 +284,7 @@ export function DigitalCardDesigner() {
                     onChange={(e) =>
                       setCardData({ ...cardData, senderName: e.target.value })
                     }
-                    placeholder="Nhập tên của bạn..."
+                    placeholder={t.senderPlaceholder}
                     className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   />
                 </div>
@@ -292,7 +292,7 @@ export function DigitalCardDesigner() {
                 {/* Font Selection */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-3">
-                    Kiểu chữ
+                    {t.cardFont}
                   </label>
                   <div className="grid grid-cols-2 gap-3">
                     {fonts.map((font) => (
@@ -318,7 +318,7 @@ export function DigitalCardDesigner() {
                 {/* Text Size */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-3">
-                    Cỡ chữ
+                    {t.textSizeLabel}
                   </label>
                   <div className="flex space-x-3">
                     {["small", "medium", "large"].map((size) => (
@@ -334,10 +334,10 @@ export function DigitalCardDesigner() {
                         }`}
                       >
                         {size === "small"
-                          ? "Nhỏ"
+                          ? t.sizeSmall
                           : size === "medium"
-                          ? "Vừa"
-                          : "Lớn"}
+                          ? t.sizeMedium
+                          : t.sizeLarge}
                       </button>
                     ))}
                   </div>
@@ -348,18 +348,20 @@ export function DigitalCardDesigner() {
 
           {/* Preview Panel */}
           <div className="bg-white rounded-xl shadow-lg p-6">
-            <h2 className="text-2xl font-bold text-gray-800 mb-6">Xem trước</h2>
+            <h2 className="text-2xl font-bold text-gray-800 mb-6">
+              {t.cardPreview}
+            </h2>
             {generatePreviewCard()}
 
             <div className="mt-6 space-y-3">
               <button className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white py-3 rounded-lg font-semibold hover:from-purple-600 hover:to-pink-600 transition-all">
-                💾 Lưu thiệp
+                {t.saveCard}
               </button>
               <button className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 text-white py-3 rounded-lg font-semibold hover:from-blue-600 hover:to-cyan-600 transition-all">
-                📤 Gửi thiệp
+                {t.sendCard}
               </button>
               <button className="w-full bg-gradient-to-r from-green-500 to-emerald-500 text-white py-3 rounded-lg font-semibold hover:from-green-600 hover:to-emerald-600 transition-all">
-                🖨️ In thiệp
+                {t.printCard}
               </button>
             </div>
           </div>

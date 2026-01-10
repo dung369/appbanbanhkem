@@ -1,7 +1,11 @@
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
+"use client";
+
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { useTranslation } from "@/lib/translations";
 
 export function Hero() {
+  const { t } = useTranslation();
   return (
     <section className="bg-gradient-to-r from-pink-100 via-purple-50 to-pink-100 py-16">
       <div className="container mx-auto px-4">
@@ -10,16 +14,17 @@ export function Hero() {
           <div className="space-y-6">
             <div className="space-y-4">
               <h1 className="text-4xl lg:text-6xl font-bold text-gray-900">
-                Bánh kem
+                {t.heroTitle}
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-purple-500">
                   {" "}
-                  tươi ngon
+                  {t.heroTitleHighlight}
                 </span>
               </h1>
-              <h2 className="text-2xl lg:text-3xl font-semibold text-gray-700">Giao tận nơi 🚚</h2>
+              <h2 className="text-2xl lg:text-3xl font-semibold text-gray-700">
+                {t.heroSubtitle}
+              </h2>
               <p className="text-lg text-gray-600 leading-relaxed">
-                Đặt bánh online dễ dàng, tùy chỉnh theo ý thích. Giao hàng nhanh chóng, bánh tươi ngon đảm bảo chất
-                lượng.
+                {t.heroDescription}
               </p>
             </div>
 
@@ -28,10 +33,10 @@ export function Hero() {
                 size="lg"
                 className="bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600"
               >
-                🛒 Đặt bánh ngay
+                🛒 {t.orderNow}
               </Button>
               <Button size="lg" variant="outline">
-                🎨 Tùy chỉnh bánh riêng
+                🎨 {t.customNow}
               </Button>
             </div>
 
@@ -73,5 +78,5 @@ export function Hero() {
         </div>
       </div>
     </section>
-  )
+  );
 }
