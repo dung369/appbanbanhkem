@@ -90,23 +90,23 @@ export function BestSellers() {
   }
 
   return (
-    <section className="py-16 bg-gray-50">
+    <section className="py-8 sm:py-12 md:py-16 bg-gray-50">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-12">
-          <Badge className="bg-yellow-500 text-white px-4 py-2 text-lg mb-4">
+        <div className="text-center mb-8 sm:mb-12">
+          <Badge className="bg-yellow-500 text-white px-3 py-1 sm:px-4 sm:py-2 text-sm sm:text-base lg:text-lg mb-3 sm:mb-4">
             ⭐ {t.bestSeller}
           </Badge>
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-3 sm:mb-4">
             {t.bestSellersSubtitle}
           </h2>
         </div>
 
         {bestSellers.length === 0 ? (
-          <div className="border rounded-lg bg-white py-12 text-center text-gray-600">
+          <div className="border rounded-lg bg-white py-8 sm:py-12 text-center text-sm sm:text-base text-gray-600 mx-4">
             Chưa có sản phẩm bán chạy. Sản phẩm sẽ hiển thị khi Admin thêm vào.
           </div>
         ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
             {bestSellers.map((cake, index) => (
               <Card
                 key={cake.id}

@@ -44,16 +44,17 @@ service cloud.firestore {
     
     // Chat Sessions - Allow guest users
     match /chat_sessions/{sessionId} {
-      // Anyone can read their own chat sessions (including guests)
-      allow read: if resource.data.userId == request.auth.uid || 
-         request.auth.token.email == "trandaidung9a1@gmail.com";
+      // Admin can read all sessions, users can read their own
+      allow read: if request.auth != null && 
+        (request.auth.token.email == "trandaidung9a1@gmail.com" || 
+         resource.data.userId == request.auth.uid);
       
       // Anyone can create chat sessions (including guests)
       allow create: if true;
       
-      // Users can update their own sessions
-      allow update: if resource.data.userId == request.auth.uid || 
-         request.auth.token.email == "trandaidung9a1@gmail.com";
+      // Users can update their own sessions, admin can update/delete all
+      allow update, delete: if resource.data.userId == request.auth.uid || 
+         (request.auth != null && request.auth.token.email == "trandaidung9a1@gmail.com");
     }
     
     // Chat Messages - Allow guest users

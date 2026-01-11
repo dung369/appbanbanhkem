@@ -20,26 +20,26 @@ export function HotTrendCakes() {
   };
 
   return (
-    <section className="py-16 bg-white">
+    <section className="py-8 sm:py-12 md:py-16 bg-white">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-12">
-          <div className="flex items-center justify-center mb-4">
-            <Badge className="bg-gradient-to-r from-pink-500 to-purple-500 text-white px-4 py-2 text-lg">
+        <div className="text-center mb-8 sm:mb-12">
+          <div className="flex items-center justify-center mb-3 sm:mb-4">
+            <Badge className="bg-gradient-to-r from-pink-500 to-purple-500 text-white px-3 py-1 sm:px-4 sm:py-2 text-sm sm:text-base lg:text-lg">
               🔥 HOT TREND
             </Badge>
           </div>
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">Bánh đang "viral" trên mạng xã hội</h2>
-          <p className="text-gray-600 max-w-2xl mx-auto">
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-3 sm:mb-4 px-4">Bánh đang "viral" trên mạng xã hội</h2>
+          <p className="text-sm sm:text-base text-gray-600 max-w-2xl mx-auto px-4">
             Những mẫu bánh được đặt nhiều nhất, phù hợp với xu hướng hiện tại
           </p>
         </div>
 
         {hotTrendCakes.length === 0 ? (
-          <div className="border rounded-lg bg-white py-12 text-center text-gray-600">
+          <div className="border rounded-lg bg-white py-8 sm:py-12 text-center text-sm sm:text-base text-gray-600 mx-4">
             Chưa có sản phẩm Hot Trend. Sản phẩm sẽ hiển thị khi Admin thêm vào.
           </div>
         ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {hotTrendCakes.map((cake, index) => (
             <Card key={index} className="group hover:shadow-xl transition-all duration-300 overflow-hidden">
               <div className="relative">

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { auth, db } from "@/lib/firebase";
 import { signOut } from "firebase/auth";
@@ -11,6 +11,10 @@ import {
   doc,
   query,
   orderBy,
+  onSnapshot,
+  addDoc,
+  Timestamp,
+  where,
 } from "firebase/firestore";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -91,6 +95,24 @@ interface Address {
   isDefault: boolean;
 }
 
+interface ChatSession {
+  id: string;
+  userId: string;
+  createdAt: any;
+  lastMessage?: string;
+  unreadCount?: number;
+}
+
+interface ChatMessage {
+  id: string;
+  chatId: string;
+  senderId: string;
+  senderType: "user" | "bot" | "cskh";
+  content: string;
+  timestamp: any;
+  read: boolean;
+}
+
 export function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [showFilterModal, setShowFilterModal] = useState(false);
@@ -108,6 +130,13 @@ export function AdminDashboard() {
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const router = useRouter();
+
+  // Chat states
+  const [chatSessions, setChatSessions] = useState<ChatSession[]>([]);
+  const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [adminMessage, setAdminMessage] = useState("");
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Load products from Firestore
   const loadProducts = async () => {
@@ -226,6 +255,146 @@ export function AdminDashboard() {
         return "Văn phòng";
       default:
         return "Khác";
+    }
+  };
+
+  // Load chat sessions
+  useEffect(() => {
+    if (activeTab !== "chat") return;
+
+    console.log("Loading chat sessions...");
+
+    // Simple query without orderBy to test
+    const sessionsRef = collection(db, "chat_sessions");
+
+    const unsubscribe = onSnapshot(
+      sessionsRef,
+      (snapshot) => {
+        console.log("Sessions snapshot received:", snapshot.docs.length);
+        const sessions = snapshot.docs.map((doc) => {
+          console.log("Session data:", doc.id, doc.data());
+          return {
+            id: doc.id,
+            ...doc.data(),
+          };
+        }) as ChatSession[];
+        
+        // Sort manually by createdAt
+        sessions.sort((a, b) => {
+          const timeA = a.createdAt?.toMillis?.() || 0;
+          const timeB = b.createdAt?.toMillis?.() || 0;
+          return timeB - timeA; // Descending
+        });
+        
+        setChatSessions(sessions);
+
+        // Auto-select first session if none selected
+        if (sessions.length > 0 && !selectedChatId) {
+          console.log("Auto-selecting first session:", sessions[0].id);
+          setSelectedChatId(sessions[0].id);
+        }
+      },
+      (error) => {
+        console.error("Error loading sessions:", error);
+      }
+    );
+
+    return () => unsubscribe();
+  }, [activeTab, selectedChatId]);
+
+  // Load messages for selected chat
+  useEffect(() => {
+    if (!selectedChatId) {
+      console.log("No chat selected");
+      return;
+    }
+
+    console.log("Loading messages for chat:", selectedChatId);
+
+    const messagesQuery = query(
+      collection(db, "chat_messages"),
+      where("chatId", "==", selectedChatId),
+      orderBy("timestamp", "asc")
+    );
+
+    const unsubscribe = onSnapshot(
+      messagesQuery,
+      (snapshot) => {
+        console.log("Messages snapshot received:", snapshot.docs.length);
+        const messages = snapshot.docs.map((doc) => {
+          console.log("Message data:", doc.data());
+          return {
+            id: doc.id,
+            ...doc.data(),
+          };
+        }) as ChatMessage[];
+        setChatMessages(messages);
+      },
+      (error) => {
+        console.error("Error loading messages:", error);
+      }
+    );
+
+    return () => unsubscribe();
+  }, [selectedChatId]);
+
+  // Auto-scroll to bottom
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [chatMessages]);
+
+  // Send admin message
+  const sendAdminMessage = async () => {
+    if (!adminMessage.trim() || !selectedChatId) return;
+
+    try {
+      await addDoc(collection(db, "chat_messages"), {
+        chatId: selectedChatId,
+        senderId: auth.currentUser?.uid || "admin",
+        senderType: "cskh",
+        content: adminMessage,
+        timestamp: Timestamp.now(),
+        read: false,
+      });
+
+      setAdminMessage("");
+    } catch (error) {
+      console.error("Error sending message:", error);
+    }
+  };
+
+  // Delete chat session and all its messages
+  const deleteChat = async (sessionId: string) => {
+    if (!confirm("Bạn có chắc muốn xóa cuộc trò chuyện này?")) {
+      return;
+    }
+
+    try {
+      // Delete all messages in this chat
+      const messagesQuery = query(
+        collection(db, "chat_messages"),
+        where("chatId", "==", sessionId)
+      );
+      const messagesSnapshot = await getDocs(messagesQuery);
+      
+      const deletePromises = messagesSnapshot.docs.map((doc) =>
+        deleteDoc(doc.ref)
+      );
+      await Promise.all(deletePromises);
+
+      // Delete the chat session
+      await deleteDoc(doc(db, "chat_sessions", sessionId));
+
+      // If this was the selected chat, clear selection
+      if (selectedChatId === sessionId) {
+        setSelectedChatId(null);
+        setChatMessages([]);
+      }
+
+      console.log("Chat deleted successfully");
+    } catch (error) {
+      console.error("Error deleting chat:", error);
+      alert("Không thể xóa cuộc trò chuyện. Vui lòng thử lại!");
     }
   };
 
@@ -615,27 +784,143 @@ export function AdminDashboard() {
                 <div className="bg-gradient-to-r from-pink-500 to-rose-400 text-white px-6 py-4 flex items-center justify-between">
                   <div className="font-semibold">Chat với khách hàng</div>
                   <div className="text-sm">
-                    Đang hoạt động •
+                    {chatSessions.length} cuộc trò chuyện •
                     <span className="ml-1 inline-block w-2 h-2 bg-green-400 rounded-full align-middle"></span>
                   </div>
                 </div>
                 <CardContent className="p-0">
                   <div className="grid grid-cols-12 h-[60vh]">
-                    <div className="col-span-3 border-r p-4">
-                      <div className="text-sm text-gray-700 font-medium mb-3">
-                        Cuộc trò chuyện
+                    {/* Chat Sessions List */}
+                    <div className="col-span-3 border-r overflow-y-auto">
+                      <div className="p-4 border-b bg-gray-50">
+                        <div className="text-sm text-gray-700 font-medium">
+                          Cuộc trò chuyện
+                        </div>
                       </div>
-                      <div className="h-full flex items-center justify-center text-gray-500">
-                        Chưa có cuộc trò chuyện
-                      </div>
+                      {chatSessions.length === 0 ? (
+                        <div className="p-4 text-center text-gray-500 text-sm">
+                          Chưa có cuộc trò chuyện
+                        </div>
+                      ) : (
+                        <div>
+                          {chatSessions.map((session) => (
+                            <div
+                              key={session.id}
+                              className={`p-4 border-b hover:bg-gray-50 transition ${
+                                selectedChatId === session.id ? "bg-blue-50 border-l-4 border-blue-500" : ""
+                              }`}
+                            >
+                              <div className="flex items-start gap-3">
+                                <div className="w-10 h-10 rounded-full bg-pink-100 flex items-center justify-center flex-shrink-0">
+                                  <User className="w-5 h-5 text-pink-600" />
+                                </div>
+                                <div 
+                                  className="flex-1 min-w-0 cursor-pointer"
+                                  onClick={() => setSelectedChatId(session.id)}
+                                >
+                                  <div className="font-medium text-sm truncate">
+                                    {session.userId.startsWith("guest_") 
+                                      ? "Khách" 
+                                      : session.userId.slice(0, 8)}
+                                  </div>
+                                  <div className="text-xs text-gray-500 mt-1">
+                                    {session.createdAt?.toDate?.()?.toLocaleString("vi-VN") || ""}
+                                  </div>
+                                </div>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    deleteChat(session.id);
+                                  }}
+                                  className="text-red-500 hover:text-red-700 hover:bg-red-50 p-2 rounded transition flex-shrink-0"
+                                  title="Xóa cuộc trò chuyện"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
+
+                    {/* Chat Messages Area */}
                     <div className="col-span-9 flex flex-col">
-                      <div className="flex-1 flex items-center justify-center text-gray-500">
-                        Chưa có tin nhắn
-                      </div>
-                      <div className="border-t p-4">
-                        <Input placeholder="Nhập tin nhắn..." />
-                      </div>
+                      {!selectedChatId ? (
+                        <div className="flex-1 flex items-center justify-center text-gray-500">
+                          Chọn một cuộc trò chuyện để bắt đầu
+                        </div>
+                      ) : (
+                        <>
+                          {/* Messages */}
+                          <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50">
+                            {chatMessages.length === 0 ? (
+                              <div className="text-center text-gray-500 text-sm mt-8">
+                                Chưa có tin nhắn
+                              </div>
+                            ) : (
+                              chatMessages.map((msg) => (
+                                <div
+                                  key={msg.id}
+                                  className={`flex ${
+                                    msg.senderType === "cskh" ? "justify-end" : "justify-start"
+                                  }`}
+                                >
+                                  <div
+                                    className={`max-w-[70%] rounded-lg p-3 ${
+                                      msg.senderType === "cskh"
+                                        ? "bg-blue-500 text-white"
+                                        : msg.senderType === "bot"
+                                        ? "bg-white border border-gray-200 text-gray-800"
+                                        : "bg-pink-100 text-gray-800"
+                                    }`}
+                                  >
+                                    {msg.senderType === "bot" && (
+                                      <div className="text-xs text-gray-500 mb-1">🤖 Bot</div>
+                                    )}
+                                    {msg.senderType === "user" && (
+                                      <div className="text-xs text-pink-600 font-medium mb-1">👤 Khách hàng</div>
+                                    )}
+                                    {msg.senderType === "cskh" && (
+                                      <div className="text-xs text-blue-100 mb-1">👨‍💼 Bạn</div>
+                                    )}
+                                    <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                                    <div className="text-xs mt-1 opacity-70">
+                                      {msg.timestamp?.toDate?.()?.toLocaleTimeString("vi-VN") || ""}
+                                    </div>
+                                  </div>
+                                </div>
+                              ))
+                            )}
+                            <div ref={messagesEndRef} />
+                          </div>
+
+                          {/* Input Area */}
+                          <div className="border-t p-4 bg-white">
+                            <div className="flex gap-2">
+                              <Input
+                                placeholder="Nhập tin nhắn..."
+                                value={adminMessage}
+                                onChange={(e) => setAdminMessage(e.target.value)}
+                                onKeyPress={(e) => {
+                                  if (e.key === "Enter" && !e.shiftKey) {
+                                    e.preventDefault();
+                                    sendAdminMessage();
+                                  }
+                                }}
+                                className="flex-1"
+                              />
+                              <Button
+                                onClick={sendAdminMessage}
+                                disabled={!adminMessage.trim()}
+                                className="bg-blue-500 hover:bg-blue-600"
+                              >
+                                Gửi
+                              </Button>
+                            </div>
+                          </div>
+                        </>
+                      )}
                     </div>
                   </div>
                 </CardContent>

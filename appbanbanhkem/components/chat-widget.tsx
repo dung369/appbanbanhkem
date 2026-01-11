@@ -47,6 +47,8 @@ export function ChatWidget({ position = "bottom-right" }: ChatWidgetProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isLiveMode, setIsLiveMode] = useState(false);
+  const [showLiveChatPrompt, setShowLiveChatPrompt] = useState(false);
 
   // Get current user or create anonymous ID
   useEffect(() => {
@@ -54,6 +56,14 @@ export function ChatWidget({ position = "bottom-right" }: ChatWidgetProps) {
       if (user) {
         setUserId(user.uid);
       } else {
+        // When user logs out, clear all chat state
+        setMessages([]);
+        setSessionId(null);
+        setIsLiveMode(false);
+        setShowLiveChatPrompt(false);
+        setInputMessage("");
+        setError(null);
+        
         // Create anonymous user ID for guests
         let guestId = localStorage.getItem("guestUserId");
         if (!guestId) {
@@ -157,6 +167,7 @@ export function ChatWidget({ position = "bottom-right" }: ChatWidgetProps) {
           userId,
           chatId: sessionId,
           message: messageToSend,
+          isLiveMode, // Pass live mode status to API
         }),
       });
 
@@ -172,6 +183,12 @@ export function ChatWidget({ position = "bottom-right" }: ChatWidgetProps) {
 
       const data = await response.json();
       console.log("API response data:", data);
+      
+      // Check if bot wants to trigger live chat
+      if (data.reply === "LIVE_CHAT_REQUEST") {
+        setShowLiveChatPrompt(true);
+      }
+      
       setError(null);
     } catch (error) {
       console.error("Error sending message:", error);
@@ -189,16 +206,16 @@ export function ChatWidget({ position = "bottom-right" }: ChatWidgetProps) {
   };
 
   const positionClasses =
-    position === "bottom-right" ? "right-4 bottom-4" : "left-4 bottom-4";
+    position === "bottom-right" ? "right-2 sm:right-4 bottom-2 sm:bottom-4" : "left-2 sm:left-4 bottom-2 sm:bottom-4";
 
   if (!isOpen) {
     return (
       <button
         onClick={() => setIsOpen(true)}
-        className={`fixed ${positionClasses} z-50 bg-pink-500 hover:bg-pink-600 text-white rounded-full p-4 shadow-lg transition-all duration-300 hover:scale-110`}
+        className={`fixed ${positionClasses} z-50 bg-pink-500 hover:bg-pink-600 text-white rounded-full p-3 sm:p-4 shadow-lg transition-all duration-300 hover:scale-110`}
         aria-label="Open chat"
       >
-        <MessageCircle className="w-6 h-6" />
+        <MessageCircle className="w-5 h-5 sm:w-6 sm:h-6" />
       </button>
     );
   }
@@ -206,16 +223,22 @@ export function ChatWidget({ position = "bottom-right" }: ChatWidgetProps) {
   return (
     <div
       className={`fixed ${positionClasses} z-50 bg-white rounded-lg shadow-2xl transition-all duration-300 ${
-        isMinimized ? "w-80 h-16" : "w-96 h-[600px]"
+        isMinimized 
+          ? "w-[calc(100vw-1rem)] sm:w-80 h-14 sm:h-16" 
+          : "w-[calc(100vw-1rem)] sm:w-96 h-[calc(100vh-2rem)] sm:h-[600px] max-h-[calc(100vh-2rem)]"
       }`}
     >
       {/* Header */}
-      <div className="bg-gradient-to-r from-pink-500 to-purple-500 text-white p-4 rounded-t-lg flex justify-between items-center">
+      <div className="bg-gradient-to-r from-pink-500 to-purple-500 text-white p-3 sm:p-4 rounded-t-lg flex justify-between items-center">
         <div>
-          <h3 className="font-semibold">💬 Chat hỗ trợ bánh kem</h3>
-          <div className="text-xs mt-1">🤖 Chatbot tự động</div>
+          <h3 className="font-semibold text-sm sm:text-base">
+            💬 Chat hỗ trợ bánh kem
+          </h3>
+          <div className="text-xs mt-1 hidden sm:block">
+            {isLiveMode ? "👤 Đang kết nối với shop" : "🤖 Chatbot tự động"}
+          </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-1 sm:gap-2">
           <button
             onClick={() => setIsMinimized(!isMinimized)}
             className="hover:bg-white/20 p-1 rounded"
@@ -238,12 +261,12 @@ export function ChatWidget({ position = "bottom-right" }: ChatWidgetProps) {
       {!isMinimized && (
         <>
           {/* Messages Area */}
-          <div className="h-[calc(100%-130px)] overflow-y-auto p-4 space-y-4 bg-gray-50">
+          <div className="h-[calc(100%-110px)] sm:h-[calc(100%-130px)] overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4 bg-gray-50">
             {messages.length === 0 && (
-              <div className="text-center text-gray-500 mt-8">
-                <MessageCircle className="w-12 h-12 mx-auto mb-2 text-gray-400" />
-                <p>Xin chào! Tôi có thể giúp gì cho bạn?</p>
-                <p className="text-sm mt-2">
+              <div className="text-center text-gray-500 mt-4 sm:mt-8">
+                <MessageCircle className="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-2 text-gray-400" />
+                <p className="text-sm sm:text-base">Xin chào! Tôi có thể giúp gì cho bạn?</p>
+                <p className="text-xs sm:text-sm mt-2">
                   Hỏi về bánh kem, giá cả, đặt hàng...
                 </p>
               </div>
@@ -257,13 +280,20 @@ export function ChatWidget({ position = "bottom-right" }: ChatWidgetProps) {
                 }`}
               >
                 <div
-                  className={`max-w-[80%] rounded-lg p-3 ${
+                  className={`max-w-[85%] sm:max-w-[80%] rounded-lg p-2 sm:p-3 ${
                     msg.senderType === "user"
                       ? "bg-pink-500 text-white"
+                      : msg.senderType === "cskh"
+                      ? "bg-blue-500 text-white"
                       : "bg-white text-gray-800 border border-gray-200"
                   }`}
                 >
-                  <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                  {msg.senderType === "cskh" && (
+                    <div className="flex items-center gap-1 mb-1">
+                      <span className="text-xs font-semibold">👤 Shop</span>
+                    </div>
+                  )}
+                  <p className="text-xs sm:text-sm whitespace-pre-wrap">{msg.content}</p>
                   {msg.images && msg.images.length > 0 && (
                     <div className="mt-2 grid grid-cols-2 gap-2">
                       {msg.images.map((img, idx) => (
@@ -271,7 +301,7 @@ export function ChatWidget({ position = "bottom-right" }: ChatWidgetProps) {
                           key={idx}
                           src={img}
                           alt="Uploaded"
-                          className="rounded w-full h-20 object-cover"
+                          className="rounded w-full h-16 sm:h-20 object-cover"
                         />
                       ))}
                     </div>
@@ -280,9 +310,52 @@ export function ChatWidget({ position = "bottom-right" }: ChatWidgetProps) {
               </div>
             ))}
 
+            {/* Live Chat Prompt in Messages Area */}
+            {showLiveChatPrompt && !isLiveMode && (
+              <div className="flex justify-center">
+                <div className="max-w-[90%] p-4 bg-gradient-to-r from-blue-50 to-purple-50 border-2 border-blue-300 rounded-xl shadow-lg">
+                  <div className="text-center mb-3">
+                    <div className="text-2xl mb-2">💬</div>
+                    <p className="text-sm font-semibold text-gray-800 mb-1">
+                      Bạn muốn chat trực tiếp với shop?
+                    </p>
+                    <p className="text-xs text-gray-600">
+                      Nhân viên sẽ tư vấn chi tiết cho bạn
+                    </p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={() => {
+                        setIsLiveMode(true);
+                        setShowLiveChatPrompt(false);
+                      }}
+                      className="flex-1 bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-sm font-semibold shadow-md"
+                    >
+                      👤 Kết nối ngay
+                    </Button>
+                    <Button
+                      onClick={() => setShowLiveChatPrompt(false)}
+                      variant="outline"
+                      className="text-sm"
+                    >
+                      Để sau
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {isLiveMode && messages.length > 0 && (
+              <div className="flex justify-center py-2">
+                <div className="bg-green-100 text-green-700 px-4 py-2 rounded-full text-xs font-semibold border border-green-300">
+                  ✅ Đã kết nối với shop - Vui lòng đợi phản hồi
+                </div>
+              </div>
+            )}
+
             {isLoading && (
               <div className="flex justify-start">
-                <div className="bg-white text-gray-800 border border-gray-200 rounded-lg p-3">
+                <div className="bg-white text-gray-800 border border-gray-200 rounded-lg p-2 sm:p-3">
                   <div className="flex space-x-2">
                     <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" />
                     <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-100" />
@@ -296,13 +369,14 @@ export function ChatWidget({ position = "bottom-right" }: ChatWidgetProps) {
           </div>
 
           {/* Input Area */}
-          <div className="border-t p-4 bg-white rounded-b-lg">
+          <div className="border-t p-2 sm:p-4 bg-white rounded-b-lg">
             {error && (
-              <div className="mb-2 p-2 bg-red-100 text-red-700 text-sm rounded">
+              <div className="mb-2 p-2 bg-red-100 text-red-700 text-xs sm:text-sm rounded">
                 {error}
               </div>
             )}
-            <div className="flex gap-2">
+            
+            <div className="flex gap-1 sm:gap-2">
               <Input
                 type="text"
                 placeholder="Nhập tin nhắn..."
@@ -310,12 +384,12 @@ export function ChatWidget({ position = "bottom-right" }: ChatWidgetProps) {
                 onChange={(e) => setInputMessage(e.target.value)}
                 onKeyPress={handleKeyPress}
                 disabled={isLoading}
-                className="flex-1"
+                className="flex-1 text-sm"
               />
               <Button
                 onClick={handleSendMessage}
                 disabled={isLoading || !inputMessage.trim()}
-                className="bg-pink-500 hover:bg-pink-600"
+                className="bg-pink-500 hover:bg-pink-600 px-3 sm:px-4"
               >
                 <Send className="w-4 h-4" />
               </Button>

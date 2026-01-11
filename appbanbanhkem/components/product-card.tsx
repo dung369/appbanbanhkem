@@ -56,7 +56,7 @@ export function ProductCard({ product }: ProductCardProps) {
         <img
           src={product.imageUrl || "/placeholder.svg"}
           alt={product.name}
-          className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+          className="w-full h-40 sm:h-48 md:h-52 object-cover group-hover:scale-105 transition-transform duration-300"
         />
         
         {/* Badges */}
@@ -96,18 +96,18 @@ export function ProductCard({ product }: ProductCardProps) {
         </div>
       </div>
 
-      <CardContent className="p-4">
-        <div className="space-y-3">
+      <CardContent className="p-3 sm:p-4">
+        <div className="space-y-2 sm:space-y-3">
           <div>
-            <h3 className="font-semibold text-lg text-gray-900 line-clamp-2 hover:text-pink-600 cursor-pointer" onClick={handleViewDetail}>
+            <h3 className="font-semibold text-base sm:text-lg text-gray-900 line-clamp-2 hover:text-pink-600 cursor-pointer" onClick={handleViewDetail}>
               {product.name}
             </h3>
-            <p className="text-sm text-gray-600 line-clamp-2 mt-1">{product.description}</p>
+            <p className="text-xs sm:text-sm text-gray-600 line-clamp-2 mt-1">{product.description}</p>
           </div>
 
-          <div className="flex items-center justify-between text-sm text-gray-600">
-            <span>Kích cỡ: {product.size}</span>
-            <span>Vị: {product.flavor}</span>
+          <div className="flex items-center justify-between text-xs sm:text-sm text-gray-600">
+            <span className="truncate">Kích cỡ: {product.size}</span>
+            <span className="truncate">Vị: {product.flavor}</span>
           </div>
 
           <div className="flex items-center space-x-2">

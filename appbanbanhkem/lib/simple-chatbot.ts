@@ -55,6 +55,35 @@ function isThanksOrBye(message: string): boolean {
     normalized.includes(normalizeText(keyword))
   );
 }
+// Check if customer wants to chat with shop directly
+export function wantsLiveChat(message: string): boolean {
+  const liveChatKeywords = [
+    "liên hệ",
+    "nhắn tin",
+    "chat với shop",
+    "inbox",
+    "tư vấn",
+    "hỏi shop",
+    "hỗ trợ",
+    "cần tư vấn",
+    "nói chuyện với shop",
+    "chat ngay",
+    "cho mình hỏi",
+    "shop ơi",
+    "mình cần tư vấn",
+    "có ai tư vấn",
+    "mình muốn hỏi",
+    "cho mình hỏi chút",
+    "nói chuyện trực tiếp",
+    "chat trực tiếp",
+    "muốn nhắn tin",
+    "tư vấn trực tiếp",
+  ];
+  const normalized = normalizeText(message);
+  return liveChatKeywords.some((keyword) =>
+    normalized.includes(normalizeText(keyword))
+  );
+}
 
 // Find best matching FAQ
 function findBestMatch(userMessage: string): MatchResult | null {
@@ -102,6 +131,11 @@ function findBestMatch(userMessage: string): MatchResult | null {
 
 // Generate response
 export function generateSimpleResponse(userMessage: string): string {
+  // Check if customer wants live chat first
+  if (wantsLiveChat(userMessage)) {
+    return "LIVE_CHAT_REQUEST";
+  }
+
   // Check greeting
   if (isGreeting(userMessage)) {
     return GREETINGS[Math.floor(Math.random() * GREETINGS.length)];
