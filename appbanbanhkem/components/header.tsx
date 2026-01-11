@@ -31,7 +31,7 @@ import {
 import { useTranslation } from "@/lib/translations";
 
 export function Header() {
-  const { t } = useTranslation();
+  const { t, mounted } = useTranslation();
   const [showSpecialFeatures, setShowSpecialFeatures] = useState(false);
   const [showMiniGame, setShowMiniGame] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
@@ -48,7 +48,9 @@ export function Header() {
       {/* Top bar */}
       <div className="bg-pink-50 py-2">
         <div className="container mx-auto px-4 text-center">
-          <p className="text-sm text-pink-700">{t.freeShipping}</p>
+          <p className="text-sm text-pink-700 min-h-[20px]">
+            {mounted ? t.freeShipping : "🚚 Miễn phí giao hàng cho đơn từ 500k - Giao hàng toàn quốc 🚚"}
+          </p>
         </div>
       </div>
 

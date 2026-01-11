@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -27,6 +28,11 @@ interface ProductGridProps {
 
 export function ProductGrid({ products = [] }: ProductGridProps) {
   const { t, language } = useTranslation();
+  const router = useRouter();
+
+  const handleViewDetail = (productId: number) => {
+    router.push(`/san-pham/${productId}`);
+  };
 
   return (
     <div className="space-y-6">
@@ -108,7 +114,8 @@ export function ProductGrid({ products = [] }: ProductGridProps) {
                   )}
 
                   {/* Hover Actions */}
-                  <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center space-x-2">
+                  <d  onClick={() => handleViewDetail(product.id)}
+                    iv className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center space-x-2">
                     <Button
                       size="sm"
                       variant="secondary"
@@ -172,7 +179,11 @@ export function ProductGrid({ products = [] }: ProductGridProps) {
                       <Button className="flex-1 bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600">
                         <ShoppingCart className="w-4 h-4 mr-2" />
                         Thêm vào giỏ
-                      </Button>
+                      </Button
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => handleViewDetail(product.id)}
+                      
                       <Button variant="outline" size="sm">
                         Chi tiết
                       </Button>

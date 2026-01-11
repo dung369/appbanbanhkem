@@ -140,7 +140,10 @@ export function ProductCard({ product }: ProductCardProps) {
           </div>
 
           <div className="flex space-x-2">
-            <Button className="flex-1 bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600">
+            <Button 
+              className="flex-1 bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600"
+              onClick={handleViewDetail}
+            >
               <ShoppingCart className="w-4 h-4 mr-2" />
               Xem chi tiết
             </Button>

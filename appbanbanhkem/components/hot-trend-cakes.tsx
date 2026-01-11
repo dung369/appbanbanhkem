@@ -1,12 +1,24 @@
+"use client";
+
+import { useRouter } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Star, Heart, ShoppingCart } from "lucide-react"
 
-type HotItem = { name: string; description?: string; price: string; originalPrice?: string; rating: number; orders: number; image?: string; trending?: boolean }
+type HotItem = { id?: number; name: string; description?: string; price: string; originalPrice?: string; rating: number; orders: number; image?: string; trending?: boolean }
 const hotTrendCakes: HotItem[] = []
 
 export function HotTrendCakes() {
+  const router = useRouter();
+
+  const handleViewDetail = (index: number) => {
+    // Sử dụng id nếu có, nếu không dùng index
+    const cake = hotTrendCakes[index];
+    const productId = cake.id || index;
+    router.push(`/san-pham/${productId}`);
+  };
+
   return (
     <section className="py-16 bg-white">
       <div className="container mx-auto px-4">
@@ -71,7 +83,11 @@ export function HotTrendCakes() {
                     <ShoppingCart className="w-4 h-4 mr-2" />
                     Đặt nhanh
                   </Button>
-                  <Button variant="outline" size="sm">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => handleViewDetail(index)}
+                  >
                     Xem chi tiết
                   </Button>
                 </div>

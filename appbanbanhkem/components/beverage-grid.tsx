@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -33,7 +34,12 @@ interface Beverage {
 
 export function BeverageGrid() {
   const { t, language } = useTranslation();
+  const router = useRouter();
   const [beverages] = useState<Beverage[]>([]);
+
+  const handleViewDetail = (productId: number) => {
+    router.push(`/san-pham/${productId}`);
+  };
 
   const getTemperatureIcon = (temp: string) => {
     switch (temp) {
@@ -164,7 +170,12 @@ export function BeverageGrid() {
 
                 {/* Hover Actions */}
                 <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center space-x-2">
-                  <Button size="sm" variant="secondary" className="bg-white/90">
+                  <Button 
+                    size="sm" 
+                    variant="secondary" 
+                    className="bg-white/90"
+                    onClick={() => handleViewDetail(beverage.id)}
+                  >
                     <Eye className="w-4 h-4" />
                   </Button>
                   <Button size="sm" variant="secondary" className="bg-white/90">
@@ -234,7 +245,11 @@ export function BeverageGrid() {
                     </div>
                   </div>
 
-                  <div className="flex space-x-2">
+                  <div class
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => handleViewDetail(beverage.id)}
+                    
                     <Button className="flex-1 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600">
                       <ShoppingCart className="w-4 h-4 mr-2" />
                       Thêm vào giỏ

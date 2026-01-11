@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -26,7 +27,12 @@ interface Snack {
 
 export function SnackGrid() {
   const { t, language } = useTranslation();
+  const router = useRouter();
   const [snacks] = useState<Snack[]>([]);
+
+  const handleViewDetail = (productId: number) => {
+    router.push(`/san-pham/${productId}`);
+  };
 
   return (
     <div className="space-y-6">
@@ -136,6 +142,11 @@ export function SnackGrid() {
                       %
                     </Badge>
                   )}
+                    size="sm" 
+                    variant="secondary" 
+                    className="bg-white/90"
+                    onClick={() => handleViewDetail(snack.id)}
+                  
                 </div>
 
                 {/* Hover Actions */}
@@ -200,7 +211,11 @@ export function SnackGrid() {
                     </div>
                   </div>
 
-                  <div className="flex space-x-2">
+                  <div class
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => handleViewDetail(snack.id)}
+                    
                     <Button className="flex-1 bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600">
                       <ShoppingCart className="w-4 h-4 mr-2" />
                       Thêm vào giỏ

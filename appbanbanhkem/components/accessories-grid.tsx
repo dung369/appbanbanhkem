@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -23,7 +24,12 @@ interface Accessory {
 
 export function AccessoriesGrid() {
   const { t, language } = useTranslation();
+  const router = useRouter();
   const [accessories] = useState<Accessory[]>([]);
+
+  const handleViewDetail = (productId: number) => {
+    router.push(`/san-pham/${productId}`);
+  };
 
   return (
     <div className="space-y-6">
@@ -109,6 +115,11 @@ export function AccessoriesGrid() {
                   {!accessory.inStock && (
                     <Badge className="bg-gray-500 text-white">Hết hàng</Badge>
                   )}
+                    size="sm" 
+                    variant="secondary" 
+                    className="bg-white/90"
+                    onClick={() => handleViewDetail(accessory.id)}
+                  
                 </div>
 
                 {/* Hover Actions */}
@@ -165,7 +176,11 @@ export function AccessoriesGrid() {
                   <div className="flex space-x-2">
                     <Button
                       className="flex-1 bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600"
-                      disabled={!accessory.inStock}
+                      disabl
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => handleViewDetail(accessory.id)}
+                    
                     >
                       <ShoppingCart className="w-4 h-4 mr-2" />
                       {accessory.inStock ? "Thêm vào giỏ" : "Hết hàng"}

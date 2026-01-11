@@ -1246,12 +1246,20 @@ export const translations = {
 
 // Hook để sử dụng translation
 export function useTranslation() {
-  // Sử dụng state để trigger re-render khi language thay đổi
-  const [language, setLanguage] = React.useState<Language>(() => {
-    if (typeof window === "undefined") return "vi";
-    const savedLang = localStorage.getItem("app_language") as Language;
-    return savedLang || "vi";
-  });
+  // Always start with Vietnamese to match SSR, then update on mount
+  const [language, setLanguage] = React.useState<Language>("vi");
+  const [mounted, setMounted] = React.useState(false);
+
+  // Update language from localStorage after component mounts (client-side only)
+  React.useEffect(() => {
+    setMounted(true);
+    if (typeof window !== "undefined") {
+      const savedLang = localStorage.getItem("app_language") as Language;
+      if (savedLang) {
+        setLanguage(savedLang);
+      }
+    }
+  }, []);
 
   // Listen for language changes
   React.useEffect(() => {
@@ -1268,7 +1276,7 @@ export function useTranslation() {
 
   const t = translations[language];
 
-  return { t, language };
+  return { t, language, mounted };
 }
 
 // Function để get translation (dùng cho server component)
