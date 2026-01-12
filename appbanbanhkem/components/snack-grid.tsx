@@ -142,16 +142,16 @@ export function SnackGrid() {
                       %
                     </Badge>
                   )}
-                    size="sm" 
-                    variant="secondary" 
-                    className="bg-white/90"
-                    onClick={() => handleViewDetail(snack.id)}
-                  
                 </div>
 
                 {/* Hover Actions */}
                 <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center space-x-2">
-                  <Button size="sm" variant="secondary" className="bg-white/90">
+                  <Button 
+                    size="sm" 
+                    variant="secondary" 
+                    className="bg-white/90"
+                    onClick={() => handleViewDetail(snack.id)}
+                  >
                     <Eye className="w-4 h-4" />
                   </Button>
                   <Button size="sm" variant="secondary" className="bg-white/90">
@@ -211,16 +211,16 @@ export function SnackGrid() {
                     </div>
                   </div>
 
-                  <div class
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => handleViewDetail(snack.id)}
-                    
+                  <div className="flex space-x-2">
                     <Button className="flex-1 bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600">
                       <ShoppingCart className="w-4 h-4 mr-2" />
                       Thêm vào giỏ
                     </Button>
-                    <Button variant="outline" size="sm">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => handleViewDetail(snack.id)}
+                    >
                       Chi tiết
                     </Button>
                   </div>

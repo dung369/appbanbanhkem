@@ -49,15 +49,39 @@ export function AuthForm() {
     setError(null)
     setLoading(true)
     try {
+      console.log("[AuthForm] Đang đăng nhập với email:", loginData.email)
       const userCredential = await signInWithEmailAndPassword(auth, loginData.email, loginData.password)
+      console.log("[AuthForm] Đăng nhập thành công:", userCredential.user.email)
+      
+      // Reload user để có thông tin mới nhất
+      await userCredential.user.reload()
+      
       // Kiểm tra nếu là admin thì chuyển đến trang admin, không thì về trang chủ
       if (userCredential.user.email === "trandaidung9a1@gmail.com") {
+        console.log("[AuthForm] Chuyển hướng đến /admin")
         router.push("/admin")
       } else {
+        console.log("[AuthForm] Chuyển hướng đến /")
         router.push("/")
       }
     } catch (err: any) {
-      setError(err?.message || "Đăng nhập thất bại")
+      console.error("[AuthForm] Lỗi đăng nhập:", err.code, err.message)
+      let errorMessage = "Đăng nhập thất bại"
+      
+      // Xử lý các lỗi Firebase phổ biến
+      if (err.code === "auth/invalid-credential" || err.code === "auth/wrong-password") {
+        errorMessage = "Email hoặc mật khẩu không chính xác"
+      } else if (err.code === "auth/user-not-found") {
+        errorMessage = "Tài khoản không tồn tại"
+      } else if (err.code === "auth/invalid-email") {
+        errorMessage = "Email không hợp lệ"
+      } else if (err.code === "auth/network-request-failed") {
+        errorMessage = "Lỗi kết nối mạng, vui lòng thử lại"
+      } else if (err.message) {
+        errorMessage = err.message
+      }
+      
+      setError(errorMessage)
     } finally {
       setLoading(false)
     }

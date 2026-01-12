@@ -245,16 +245,16 @@ export function BeverageGrid() {
                     </div>
                   </div>
 
-                  <div class
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => handleViewDetail(beverage.id)}
-                    
+                  <div className="flex space-x-2">
                     <Button className="flex-1 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600">
                       <ShoppingCart className="w-4 h-4 mr-2" />
                       Thêm vào giỏ
                     </Button>
-                    <Button variant="outline" size="sm">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => handleViewDetail(beverage.id)}
+                    >
                       Chi tiết
                     </Button>
                   </div>

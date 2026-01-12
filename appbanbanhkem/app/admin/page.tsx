@@ -13,15 +13,31 @@ export default function AdminPage() {
   const router = useRouter()
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, (user) => {
+    const unsub = onAuthStateChanged(auth, async (user) => {
       if (!user) {
+        console.log("[Admin] Không có user đăng nhập")
         setStatus("guest")
         router.replace("/auth")
         return
       }
-      if (user.email === ADMIN_EMAIL) {
-        setStatus("admin")
-      } else {
+      
+      // Reload token để đảm bảo có token mới nhất
+      try {
+        await user.reload()
+        const token = await user.getIdTokenResult(true) // Force refresh token
+        console.log("[Admin] User email:", user.email)
+        console.log("[Admin] Token email:", token.claims.email)
+        console.log("[Admin] Email verified:", user.emailVerified)
+        
+        if (user.email === ADMIN_EMAIL || token.claims.email === ADMIN_EMAIL) {
+          console.log("[Admin] Xác nhận admin thành công")
+          setStatus("admin")
+        } else {
+          console.log("[Admin] User không phải admin:", user.email)
+          setStatus("user")
+        }
+      } catch (error) {
+        console.error("[Admin] Lỗi khi kiểm tra token:", error)
         setStatus("user")
       }
     })
